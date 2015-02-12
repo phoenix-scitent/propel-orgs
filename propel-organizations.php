@@ -44,6 +44,9 @@ class Propel_Organizations {
 		add_action( 'userpro_before_form_submit',
 			array( $this, 'render_userpro_fields' ), 1 );
 
+		add_action( 'woocommerce_after_checkout_billing_form',
+			array( $this, 'render_woocommerce_fields' ) );
+
 
 		// Save fields
 		add_action( 'personal_options_update',
@@ -52,6 +55,9 @@ class Propel_Organizations {
 			array( $this, 'save_user_fields' ) );
 		add_action( 'user_register',
 			array( $this, 'save_user_fields' ) );
+
+		add_action( 'woocommerce_checkout_update_order_meta',
+			array( $this, 'save_woocommerce_user_fields' ) );
 	}
 
 
@@ -261,6 +267,94 @@ class Propel_Organizations {
 
 
 	/**
+	 * Renders the league and team fields for the woocommerce review order form
+	 *
+	 * @author caseypatrickdriscoll
+	 *
+	 * @created 2015-02-12 15:16:12
+	 *
+	 * @param  Array   $args
+	 *
+	 * @action woocommerce_after_checkout_billing_form
+	 */
+	function render_woocommerce_fields( $args ) {
+
+		$user = wp_get_current_user();
+
+		if ( $user->ID != 0 ) return;
+
+		wp_localize_script( 'propel_orgs_woocommerce', 'data', array( 'args' => $args ) );
+
+		wp_enqueue_script( 'propel_orgs_woocommerce' );
+
+		$org_types = get_categories( array( 'taxonomy' => 'org_type', 'hierarchical' => 1 ) );
+
+
+		foreach ( $org_types as $org_type ) {
+
+			$org = get_user_meta( $user->ID, 'propel_org_' . $org_type->slug, 1 );
+
+			if ( $org_type->parent == 0 ) {
+				$parent = 'parent';
+				$disabled = '';
+			} else {
+				$parent = '';
+				$disabled = 'disabled';
+			}
+
+			?>
+
+			<p class="form-row">
+				<label for="<?php echo $org_type->slug; ?>"><?php echo $org_type->name; ?></label>
+				<select
+						class="propel-org <?php echo $parent; ?>"
+						id="<?php echo $org_type->slug; ?>"
+						name="propel_org_<?php echo $org_type->slug; ?>"
+						data-type="<?php echo $org_type->term_id; ?>"
+						<?php echo $disabled; ?> >
+
+						<option value="">Please select a <?php echo $org_type->slug; ?></option>
+
+					<?php
+
+			if ( $org_type->category_parent == 0 ) {
+
+				$org_query = array(
+					'post_type' => 'propel_org',
+					'nopaging' => 1,
+					'tax_query' => array( array(
+						'taxonomy' => 'org_type',
+						'field' => 'slug',
+						'terms' => $org_type->slug,
+						'include_children' => 0
+					) )
+				);
+
+				$orgs = new WP_Query( $org_query );
+
+				if ( $orgs->have_posts() ): while ( $orgs->have_posts() ):
+
+					$orgs->the_post();
+
+					$selected = $org == get_the_id() ? 'selected' : '';
+
+					echo '<option value="' . get_the_id() . '" ' . $selected . '>' . get_the_title() . '</option>';
+
+				endwhile; endif;
+
+			}
+
+
+			?>
+						</select>
+			</p>
+
+	<?php
+		}
+	}
+
+
+	/**
 	 * Generates a list of options for the 'team' select list in user profiles
 	 *
 	 * @author  caseypatrickdriscoll
@@ -336,6 +430,29 @@ class Propel_Organizations {
 			}
 		}
 
+	}
+
+
+	/**
+	 * Saves the orgs user meta information after purchase
+	 *
+	 * @author caseypatrickdriscoll
+	 *
+	 * @created 2015-02-12 15:16:29
+	 *
+	 * @param int   $order_id   The order id
+	 *
+	 * @action woocommerce_checkout_update_order_meta
+	 */
+	function save_woocommerce_user_fields( $order_id ) {
+		$order = new WC_Order( $order_id );
+		$user_id = $order->user_id;
+
+		foreach ( $_POST as $key => $value) {
+			if ( substr( $key, 0, 11) == "propel_org_" ) {
+				update_usermeta( $user_id, $key, $value );
+			}
+		}
 	}
 
 }
