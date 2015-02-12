@@ -2,31 +2,33 @@ jQuery( document ).ready( function() {
 
 	jQuery( '.userpro-section' ).hide();
 
-	setTeams();
+	setChildOrgs();
 
-	jQuery( '#leagues' ).on( 'change', function(e) {
-		setTeams();
+	jQuery( '.propel-org.parent' ).on( 'change', function(e) {
+		setChildOrgs();
 	} );
 
 } );
 
-function setTeams() {
-	league = jQuery( '#leagues' ).val();
+function setChildOrgs() {
+	parent = jQuery( '.parent' ).val();
+	parentType = jQuery( '.parent' ).data( 'type' );
 
-	if ( league == '' ) return;
+	if ( parent == '' ) return;
 
 	jQuery.post(
 		'/wp-admin/admin-ajax.php',
 		{
-			'action'  : 'get_teams',
-			'league'  : league,
+			'action'  : 'get_child_orgs',
+			'parent'  : parent,
+			'type'    : parentType,
 			'user_id' : data.user_id
 		},
 		function( response ) {
-			if ( response.data.html.length > 0 ) 
-				jQuery( '#team' ).html( response.data.html ).attr( 'disabled', false);
+			if ( response.data.html.length > 0 )
+				jQuery( '#' + response.data.child ).html( response.data.html ).attr( 'disabled', false);
 			else
-				jQuery( '#team' ).html( '<option value="">League has no teams</option>' ).attr( 'disabled', true );
+				jQuery( '#' + response.data.child ).html( '<option value="">League has no teams</option>' ).attr( 'disabled', true );
 		}
 	);
 

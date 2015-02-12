@@ -15,6 +15,11 @@ class Propel_Organizations {
 
 	function __construct() {
 
+		add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts' ) );
+
+		add_action( 'wp_ajax_get_child_orgs', array( $this, 'ajax_get_child_orgs' ) );
+		add_action( 'wp_ajax_nopriv_get_child_orgs', array( $this, 'ajax_get_child_orgs' ) );
+
 
 		// Render fields
 		add_action( 'user_new_form',
@@ -23,6 +28,21 @@ class Propel_Organizations {
 			array( $this, 'render_user_fields' ) );
 		add_action( 'edit_user_profile',
 			array( $this, 'render_user_fields' ) );
+	}
+
+
+	function load_scripts( $page ) {
+
+		$pages = array( 'user-new.php', 'user-edit.php', 'profile.php' );
+
+		if ( in_array( $page, $pages ) )
+
+			wp_register_script(
+				'propel-orgs-user',
+				plugin_dir_url( __FILE__ ) . '/js/user.js',
+				array( 'jquery' )
+			);
+
 	}
 
 
@@ -41,12 +61,12 @@ class Propel_Organizations {
 	 */
 	function render_user_fields( $user ) {
 
-		wp_localize_script( 'propel_groups_user', 'data', array( 'user_id' => $user->ID ) );
+		wp_localize_script( 'propel-orgs-user', 'data', array( 'user_id' => $user->ID ) );
 
-		wp_enqueue_script( 'propel_groups_user' );
+		wp_enqueue_script( 'propel-orgs-user' );
 
 		$org_types = get_categories( array( 'taxonomy' => 'org_type', 'hierarchical' => 1 ) );
-
+		
 		?>
 
 
@@ -54,13 +74,24 @@ class Propel_Organizations {
 
 			<?php
 
-			foreach ( $org_types as $org_type ) { ?>
+			foreach ( $org_types as $org_type ) {
+
+				if ( $org_type->parent == 0 )
+					$parent = 'parent';
+				else
+					$parent = '';
+				?>
 				<tr class="form-field">
 					<th>
-						<label for="leagues"><?php echo $org_type->name; ?></label>
+						<label for="<?php echo $org_type->slug; ?>"><?php echo $org_type->name; ?></label>
 					</th>
 					<td>
-						<select id="leagues" name="league">
+						<select
+							class="propel-org <?php echo $parent; ?>"
+							id="<?php echo $org_type->slug; ?>"
+							name="<?php echo $org_type->slug; ?>"
+							data-type="<?php echo $org_type->term_id; ?>">
+
 							<option value="">Please select a <?php echo $org_type->slug; ?></option>
 
 							<?php
@@ -112,25 +143,49 @@ class Propel_Organizations {
 	 *
 	 * @return  json with 'options' in html
 	 */
-	function ajax_get_teams() {
+	function ajax_get_child_orgs() {
 
-		$leagues = get_option( 'propel-groups' );
-		$league  = $_POST['league'];
-		$user    = $_POST['user_id'];
+		$parent     = $_POST['parent'];
+		$parentType = $_POST['type'];
+		$user       = $_POST['user_id'];
 
-		$teams = $leagues[$league];
+		$type = get_categories(
+			array(
+				'taxonomy' => 'org_type',
+				'hierarchical' => 1,
+				'child_of' => $parentType
+			)
+		);
+
+		$org_query = array(
+			'post_type'   => 'propel_org',
+			'nopaging'    => 1,
+			'post_parent' => $parent,
+			'tax_query'   => array( array(
+				'taxonomy'         => 'org_type',
+				'field'            => 'slug',
+				'terms'            => $type[0]->slug,
+				'include_children' => 0
+			) )
+		);
+
+		$child_orgs = new WP_Query( $org_query );
 
 		$out = '';
 
-		foreach ( $teams as $team ) {
-			if ( isset( $user ) )
-				$selected = ( get_user_meta( $user, 'team', 1 ) == $team ) ? 'selected' : '' ;
+		if ( $child_orgs->have_posts() ): while ( $child_orgs->have_posts() ):
 
-			$out .= '<option value="' . $team . '" ' . $selected . '>' . str_replace( '_', ' ', $team ) . '</option>';
-		}
+			$selected = ''; //( get_user_meta( $user->ID, 'league', 1 ) == $league_name ) ? 'selected' : '' ;
 
-		wp_send_json_success( array( 'html' => $out ) );
+			$child_orgs->the_post();
+
+			$out .= '<option value="' . get_the_id() . '" ' . $selected . '>' . get_the_title() . '</option>';
+
+		endwhile; endif;
+
+		wp_send_json_success( array( 'html' => $out, 'child' => $type[0]->slug ) );
 	}
+
 }
 
 new Propel_Organizations();
