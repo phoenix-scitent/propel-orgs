@@ -108,18 +108,9 @@ class Propel_Org_Settings {
 		<p>Assumes an 'orgs.csv' file in the 'propel-organizations' plugin folder.</p>
 
 		<p>Values should be listed as the example below:</p>
-
+		
+		<pre>[tag_id, parent_tag_id, tag_name, tag_value, sort, tag_other, createdate]</pre>
 		<pre>1,0,League,Jefferson Swim League,1,1,2010-01-14 15:15:00.000</pre>
-
-		<ul>
-			<li>Previous ID</li>
-			<li>Parent Org ID</li>
-			<li>Org Type</li>
-			<li>Org Name</li>
-			<li>Something</li>
-			<li>Something</li>
-			<li>Some Date</li>
-		</ul>
 
 		<a id="import-orgs" class="button button-primary">Import Orgs</a>
 	<?php
