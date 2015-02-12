@@ -1,6 +1,6 @@
 jQuery( document ).ready( function() {
 
-	jQuery( '.userpro-section' ).hide();
+//	jQuery( '.userpro-section' ).hide();
 
 	setChildOrgs();
 

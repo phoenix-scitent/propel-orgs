@@ -108,7 +108,7 @@ class Propel_Org_Settings {
 		<p>Assumes an 'orgs.csv' file in the 'propel-organizations' plugin folder.</p>
 
 		<p>Values should be listed as the example below:</p>
-		
+
 		<pre>[tag_id, parent_tag_id, tag_name, tag_value, sort, tag_other, createdate]</pre>
 		<pre>1,0,League,Jefferson Swim League,1,1,2010-01-14 15:15:00.000</pre>
 
