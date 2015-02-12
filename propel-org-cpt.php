@@ -26,7 +26,7 @@ class Propel_Org {
 			'add_new'             => __( 'Add New', 'propel' ),
 			'edit_item'           => __( 'Edit PROPeL Org', 'propel' ),
 			'update_item'         => __( 'Update PROPeL Org', 'propel' ),
-			'search_items'        => __( 'Search PROPeL Org', 'propel' ),
+			'search_items'        => __( 'Search PROPeL Orgs', 'propel' ),
 			'not_found'           => __( 'Not found', 'propel' ),
 			'not_found_in_trash'  => __( 'Not found in Trash', 'propel' ),
 		);
