@@ -34,7 +34,7 @@ class Propel_Org {
 			'label'               => __( 'propel_org', 'propel' ),
 			'description'         => __( 'An organization in the OKM', 'propel' ),
 			'labels'              => $labels,
-			'supports'            => array( 'title', ),
+			'supports'            => array( 'title', 'page-attributes' ),
 			'taxonomies'          => array( 'org_type' ),
 			'hierarchical'        => true,
 			'public'              => true,
