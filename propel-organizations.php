@@ -28,6 +28,15 @@ class Propel_Organizations {
 			array( $this, 'render_user_fields' ) );
 		add_action( 'edit_user_profile',
 			array( $this, 'render_user_fields' ) );
+
+
+		// Save fields
+		add_action( 'personal_options_update',
+			array( $this, 'save_user_fields' ) );
+		add_action( 'edit_user_profile_update',
+			array( $this, 'save_user_fields' ) );
+		add_action( 'user_register',
+			array( $this, 'save_user_fields' ) );
 	}
 
 
@@ -66,7 +75,7 @@ class Propel_Organizations {
 		wp_enqueue_script( 'propel-orgs-user' );
 
 		$org_types = get_categories( array( 'taxonomy' => 'org_type', 'hierarchical' => 1 ) );
-		
+
 		?>
 
 
@@ -76,10 +85,15 @@ class Propel_Organizations {
 
 			foreach ( $org_types as $org_type ) {
 
-				if ( $org_type->parent == 0 )
+				$org = get_user_meta( $user->ID, 'propel_org_' . $org_type->slug, 1 );
+
+				if ( $org_type->parent == 0 ) {
 					$parent = 'parent';
-				else
+					$disabled = '';
+				} else {
 					$parent = '';
+					$disabled = 'disabled';
+				}
 				?>
 				<tr class="form-field">
 					<th>
@@ -89,8 +103,9 @@ class Propel_Organizations {
 						<select
 							class="propel-org <?php echo $parent; ?>"
 							id="<?php echo $org_type->slug; ?>"
-							name="<?php echo $org_type->slug; ?>"
-							data-type="<?php echo $org_type->term_id; ?>">
+							name="propel_org_<?php echo $org_type->slug; ?>"
+							data-type="<?php echo $org_type->term_id; ?>"
+							<?php echo $disabled;?> >
 
 							<option value="">Please select a <?php echo $org_type->slug; ?></option>
 
@@ -113,9 +128,9 @@ class Propel_Organizations {
 
 								if ( $orgs->have_posts() ): while ( $orgs->have_posts() ):
 
-									$selected = ''; //( get_user_meta( $user->ID, 'league', 1 ) == $league_name ) ? 'selected' : '' ;
-
 									$orgs->the_post();
+
+									$selected = $org == get_the_id() ? 'selected' : '';
 
 									echo '<option value="' . get_the_id() . '" ' . $selected . '>' . get_the_title() . '</option>';
 
@@ -171,19 +186,45 @@ class Propel_Organizations {
 
 		$child_orgs = new WP_Query( $org_query );
 
+		$org = get_user_meta( $user, 'propel_org_' . $type[0]->slug, 1 );
+
 		$out = '';
 
 		if ( $child_orgs->have_posts() ): while ( $child_orgs->have_posts() ):
 
-			$selected = ''; //( get_user_meta( $user->ID, 'league', 1 ) == $league_name ) ? 'selected' : '' ;
-
 			$child_orgs->the_post();
+
+			$selected = $org == get_the_id() ? 'selected' : '';
 
 			$out .= '<option value="' . get_the_id() . '" ' . $selected . '>' . get_the_title() . '</option>';
 
 		endwhile; endif;
 
 		wp_send_json_success( array( 'html' => $out, 'child' => $type[0]->slug ) );
+	}
+
+
+	/**
+	 * Saves the organization user meta information
+	 *
+	 * @author  caseypatrickdriscoll
+	 *
+	 * @created 2015-02-12 13:58:15
+	 *
+	 * @param   int   $user_id   The user id
+	 *
+	 * @action  edit_user_profile_update
+	 * @action  personal_options_update
+	 * @action  user_register
+	 */
+	function save_user_fields( $user_id ) {
+
+		foreach ( $_POST as $key => $value) {
+			if ( substr( $key, 0, 11) == "propel_org_" ) {
+				update_usermeta( $user_id, $key, $value );
+			}
+		}
+
 	}
 
 }
