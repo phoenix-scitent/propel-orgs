@@ -1,6 +1,6 @@
 jQuery( document ).ready( function() {
 
-//	jQuery( '.userpro-section' ).hide();
+	jQuery( '.userpro-section' ).hide();
 
 	setChildOrgs();
 
@@ -11,8 +11,8 @@ jQuery( document ).ready( function() {
 } );
 
 function setChildOrgs() {
-	parent = jQuery( '.parent' ).val();
-	parentType = jQuery( '.parent' ).data( 'type' );
+	parent = jQuery( '.propel-org.parent' ).val();
+	parentType = jQuery( '.propel-org.parent' ).data( 'type' );
 
 	if ( parent == '' ) return;
 
