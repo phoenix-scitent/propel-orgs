@@ -3,6 +3,8 @@ jQuery( document ).ready( function() {
 	jQuery( '#import-orgs' ).on( 'click', function ( e ) {
 		e.preventDefault();
 
+		jQuery( '.spinner' ).show();
+
 		jQuery.post(
 			'/wp-admin/admin-ajax.php',
 			{
@@ -10,8 +12,8 @@ jQuery( document ).ready( function() {
 			},
 			function ( response ) {
 				console.log( response );
-				return;
-				location.reload();
+				jQuery( '.spinner' ).hide();
+				jQuery( '.message' ).html( 'Imported ' + response.data[1] + ' orgs. Did not import ' + response.data[2] + ' duplicates.' );
 			}
 		);
 

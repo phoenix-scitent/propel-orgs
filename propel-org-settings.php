@@ -27,8 +27,6 @@ class Propel_Org_Settings {
 
 		if ( $hook != 'propel_org_page_import-propel-orgs' ) return;
 
-		wp_enqueue_style( 'propel-groups-styles', plugin_dir_url( __FILE__ ) . 'style.css' );
-
 		wp_enqueue_script( 'propel-orgs-scripts', plugins_url( '/js/import.js', __FILE__ ), array( 'jquery' ) );
 	}
 
@@ -112,7 +110,26 @@ class Propel_Org_Settings {
 		<pre>[tag_id, parent_tag_id, tag_name, tag_value, sort, tag_other, createdate]</pre>
 		<pre>1,0,League,Jefferson Swim League,1,1,2010-01-14 15:15:00.000</pre>
 
-		<a id="import-orgs" class="button button-primary">Import Orgs</a>
+
+		<a id="import-orgs" class="button button-primary" style="float:left;">Import Orgs</a>
+		<span class="spinner"></span><span class="message"></span>
+
+		<style>
+			.message {
+				margin: 10px 0 0 10px;
+			}
+			.spinner {
+				background: url('/wp-admin/images/spinner.gif') no-repeat;
+				background-size: 16px 16px;
+				display: none;
+				float: left;
+				opacity: .7;
+				filter: alpha(opacity=70);
+				width: 16px;
+				height: 16px;
+				margin: 5px 5px 0;
+				}
+		</style>
 	<?php
 
 
@@ -139,6 +156,8 @@ class Propel_Org_Settings {
 
 		}
 
+		$created = 0;
+		$duplicates = 0;
 
 		foreach ( $lines as $line ) {
 
@@ -147,6 +166,13 @@ class Propel_Org_Settings {
 				'post_status' => 'publish',
 				'post_type' => 'propel_org',
 			);
+
+			$exists = get_page_by_title( $line[3], OBJECT, 'propel_org' );
+
+			if ( ! empty( $exists ) ) {
+				$duplicates++;
+				continue;
+			}
 
 			if ( $line[1] > 0 ) {
 				$parent = $lines[$line[1]][3];
@@ -158,18 +184,18 @@ class Propel_Org_Settings {
 			}
 
 
-
-
 			$org = wp_insert_post( $org );
+
+			$created++;
 
 			$type = get_term_by( 'name', $line[2], 'org_type' );
 
 			wp_set_object_terms( $org, (int)$type->term_id, 'org_type' );
 
-
 		}
 
 
+		wp_send_json_success( array( count( $lines ), $created, $duplicates ) );
 
 	}
 
