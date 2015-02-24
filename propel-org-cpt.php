@@ -10,6 +10,12 @@ class Propel_Org {
 		add_action( 'init', array( $this, 'create_post_type' ) );
 
 
+		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
+
+
+		add_action( 'save_post', array( $this, 'save_meta_box_data' ) );
+
+
 	}
 
 
@@ -52,6 +58,112 @@ class Propel_Org {
 		);
 		register_post_type( 'propel_org', $args );
 	}
+
+
+	/**
+	 * Registers the meta boxes needed for the propel_org cpt
+	 *
+	 * @author caseypatrickdriscoll
+	 *
+	 * @created 2015-02-24 11:11:29
+	 *
+	 * @return void
+	 */
+	function add_meta_boxes() {
+
+		add_meta_box(
+			'propel_org_org_id',
+			__( 'Org ID', 'propel' ),
+			array( $this, 'render_org_id_meta_box' ),
+			'propel_org',
+			'side'
+		);
+
+	}
+
+
+	/**
+	 * Renders the org_id meta box
+	 *
+	 * @author caseypatrickdriscoll
+	 *
+	 * @created 2015-02-24 11:12:15
+	 *
+	 * @param  WP_Post   $post   The post object
+	 *
+	 * @return void
+	 */
+	function render_org_id_meta_box( $post ) {
+		// Add an nonce field so we can check for it later.
+		wp_nonce_field( 'propel_org_org_id', 'propel_org_org_id_nonce' );
+
+		/*
+		 * Use get_post_meta() to retrieve an existing value
+		 * from the database and use the value for the form.
+		 */
+		$value = get_post_meta( $post->ID, '_org_id', true );
+
+		echo '<input type="text" id="propel_org_org_id" name="propel_org_org_id" value="' . esc_attr( $value ) . '" size="10" />';
+	}
+
+
+	/**
+	 * When the post is saved, saves the meta data.
+	 *  - Thanks, http://codex.wordpress.org/Function_Reference/add_meta_box
+	 *
+	 * @author  caseypatrickdriscoll
+	 *
+	 * @created 2015-02-24 11:14:14
+	 *
+	 * @param   int   $post_id    The ID of the post being saved.
+	 *
+	 * @return  void
+	 */
+	function save_meta_box_data( $post_id ) {
+
+		/*
+		 * We need to verify this came from our screen and with proper authorization,
+		 * because the save_post action can be triggered at other times.
+		 */
+
+		// Check if our nonce is set.
+		if ( ! isset( $_POST['propel_org_org_id_nonce'] ) ) {
+			return;
+		}
+
+		// Verify that the nonce is valid.
+		if ( ! wp_verify_nonce( $_POST['propel_org_org_id_nonce'], 'propel_org_org_id' ) ) {
+			return;
+		}
+
+		// If this is an autosave, our form has not been submitted, so we don't want to do anything.
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+
+		// Check the user's permissions.
+		if ( isset( $_POST['post_type'] ) && 'propel_org' == $_POST['post_type'] ) {
+
+			if ( ! current_user_can( 'edit_page', $post_id ) ) {
+				return;
+			}
+
+		}
+
+		/* OK, it's safe for us to save the data now. */
+
+		// Make sure that it is set.
+		if ( ! isset( $_POST['propel_org_org_id'] ) ) {
+			return;
+		}
+
+		// Sanitize user input.
+		$org_id = sanitize_text_field( $_POST['propel_org_org_id'] );
+
+		// Update the meta field in the database.
+		update_post_meta( $post_id, '_org_id', $org_id );
+	}
+
 }
 
 new Propel_Org();
