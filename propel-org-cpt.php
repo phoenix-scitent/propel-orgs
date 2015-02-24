@@ -16,6 +16,10 @@ class Propel_Org {
 		add_action( 'save_post', array( $this, 'save_meta_box_data' ) );
 
 
+		add_filter( 'gettext', array( $this, 'custom_enter_title' ) );
+
+
+
 	}
 
 
@@ -162,6 +166,28 @@ class Propel_Org {
 
 		// Update the meta field in the database.
 		update_post_meta( $post_id, '_org_id', $org_id );
+	}
+
+
+	/**
+	 * Filters for a different title entry text
+	 *
+	 * @author caseypatrickdriscoll
+	 *
+	 * @created 2015-02-24 11:28:48
+	 * 
+	 * @param  string   $input   The given title text
+	 *
+	 * @return string   $input   The new title text
+	 */
+	function custom_enter_title( $input ) {
+
+		global $post_type;
+
+		if( is_admin() && 'Enter title here' == $input && 'propel_org' == $post_type )
+			return 'Enter org name';
+
+		return $input;
 	}
 
 }
