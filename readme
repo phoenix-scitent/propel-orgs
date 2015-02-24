@@ -1,0 +1,21 @@
+Feature Set
+===========
+
+Propel Organization Data
+- Organizations are stored as the 'propel_org' custom post type
+- propel_orgs have a hierarchy and can belong to other propel_orgs
+- propel_orgs have a special 'org_type' taxonomy to label relationships like 'Team' or 'League'
+- propel_orgs have a 'org_id' post_meta
+
+
+Selecting an Propel Organization
+- A user has a user_meta for each 'propel_org' they belong to
+- The user's org relationships can be selected on several 'Edit User' pages
+  - /wp-admin/user-edit.php
+  - /wp-admin/user-new.php
+  - /wp-admin/profile.php
+- The user's org relationships can also be selected according to different actions
+  - userpro_before_form_submit
+    -- /profile/register/
+  - woocommerce_after_checkout_billing_form
+    -- /checkout/

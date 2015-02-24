@@ -175,7 +175,7 @@ class Propel_Org {
 	 * @author caseypatrickdriscoll
 	 *
 	 * @created 2015-02-24 11:28:48
-	 * 
+	 *
 	 * @param  string   $input   The given title text
 	 *
 	 * @return string   $input   The new title text
