@@ -441,7 +441,7 @@ class Propel_Organizations {
 				add_filter( 'userpro_pre_profile_update_filters', array( $this, 'update_form_array' ) );
 
 				$org = array(
-					'post_title'  => $value,
+					'post_title'  => wp_strip_all_tags( $value ),
 					'post_status' => 'draft',
 					'post_type'   => 'propel_org',
 				);
