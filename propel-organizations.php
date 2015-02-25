@@ -220,6 +220,7 @@ class Propel_Organizations {
 							id="<?php echo $org_type->slug; ?>"
 							name="propel_org_<?php echo $org_type->slug; ?>"
 							data-type="<?php echo $org_type->term_id; ?>"
+							style="height: 30px !important;"
 							<?php echo $disabled;?> >
 
 							<option value="">Please select a <?php echo $org_type->slug; ?></option>
@@ -255,6 +256,7 @@ class Propel_Organizations {
 
 
 								?>
+								<option value="add_organization">+ Add <?php echo $org_type->name; ?>...</option>
 						</select>
 					<div class="userpro-clear"></div>
 				</div>
@@ -425,9 +427,41 @@ class Propel_Organizations {
 	function save_user_fields( $user_id ) {
 
 		foreach ( $_POST as $key => $value) {
-			if ( substr( $key, 0, 11) == "propel_org_" ) {
-				update_usermeta( $user_id, $key, $value );
+
+			if ( substr( $key, 0, 11 ) == "propel_org_" && $value != "add_organization" ) {
+				update_user_meta( $user_id, $key, $value );
 			}
+
+			if ( substr( $key, 0, 15 ) == "new_propel_org_" ) {
+
+				$org_type = str_replace( 'new_propel_org_', '', $key );
+
+				add_filter( 'userpro_pre_profile_update_filters', array( $this, 'update_form_array' ) );
+
+				$org = array(
+					'post_title'  => $value,
+					'post_status' => 'draft',
+					'post_type'   => 'propel_org',
+				);
+
+				$exists = get_page_by_title( $value, OBJECT, 'propel_org' );
+
+				if ( ! empty( $exists ) ) {
+					update_user_meta( $user_id, 'propel_org_' . $org_type, $exists->ID );
+					continue;
+				}
+
+				$org = wp_insert_post( $org );
+
+				$_POST['propel_org_' . $org_type] = $org;
+
+				update_user_meta( $user_id, 'propel_org_' . $org_type, $org );
+
+				$type = get_term_by( 'name', $org_type, 'org_type' );
+
+				wp_set_object_terms( $org, (int)$type->term_id, 'org_type' );
+			}
+
 		}
 
 	}
@@ -453,6 +487,40 @@ class Propel_Organizations {
 				update_usermeta( $user_id, $key, $value );
 			}
 		}
+	}
+
+
+	/**
+	 * When UserPro creates a new user, they update the new user at the end of their 'new_user' function process.
+	 * This 'userpro_update_user_profile' process was overwriting our just written 'propel_org_' user meta data
+	 * 
+	 * To make sure the correct data is retained, we have to filter their 'form' array, a duplicate of $_POST
+	 *
+	 * @author  caseypatrickdriscoll
+	 *
+	 * @created 2015-02-25 10:44:35
+	 *
+	 * @filter  userpro_pre_profile_update_filters
+	 * 
+	 * @param   Array   $form      The UserPro form array, a duplicate of the $_POST request
+	 * @param   int     $user_id   The created user
+	 * 
+	 * @return  Array  $form       The amended UserPro form array
+	 */
+	function update_form_array( $form, $user_id ) {
+
+		foreach ( $form as $key => $value ) {
+
+			if ( substr( $key, 0, 11 ) == "propel_org_" ) {
+
+				$form[$key] = $_POST[$key];
+
+			}
+
+		}
+
+		return $form;
+
 	}
 
 }

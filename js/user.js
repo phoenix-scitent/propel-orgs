@@ -4,11 +4,23 @@ jQuery( document ).ready( function() {
 
 	setChildOrgs();
 
-	jQuery( '.propel-org.parent' ).on( 'change', function(e) {
-		setChildOrgs();
-	} );
+	jQuery( '.propel-org' ).on( 'change', function(e) {
 
+		if ( jQuery( e.target ).val() == 'add_organization' )
+			addOrganization( e.target.id );
+		else
+			setChildOrgs();
+			
+	} );
 } );
+
+
+function addOrganization( id ) {
+	input = '<input type="text" id="new_propel_org_' + id +'" name="new_propel_org_' + id + '" style="margin: 15px 15px 0 0 !important;"></input>';
+	jQuery( '#' + id ).after( input ).next().focus();
+	jQuery( '.propel-org' ).attr( 'disabled', false );
+}
+
 
 function setChildOrgs() {
 	parent = jQuery( '.propel-org.parent' ).val();
