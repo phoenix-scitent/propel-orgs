@@ -25,7 +25,7 @@ jQuery( document ).ready( function() {
 
 
 function addOrganization( id ) {
-	input = '<input type="text" id="new_propel_org_' + id +'" name="new_propel_org_' + id + '" style="margin: 15px 15px 0 0 !important;"></input>';
+	input = '<input type="text" id="new_propel_org_' + id +'" name="new_propel_org_' + id + '" style="width: 100% !important;margin: 15px 15px 0 0 !important;"></input>';
 	jQuery( '#' + id ).after( input ).next().focus();
 	jQuery( '.propel-org' ).attr( 'disabled', false );
 }

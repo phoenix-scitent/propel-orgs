@@ -277,6 +277,7 @@ class Propel_Organizations {
 	 * @author caseypatrickdriscoll
 	 *
 	 * @created 2015-02-12 15:16:12
+	 * @edited  2015-02-25 15:33:59
 	 *
 	 * @param  Array   $args
 	 *
@@ -320,6 +321,7 @@ class Propel_Organizations {
 
 						<option value="">Please select a <?php echo $org_type->slug; ?></option>
 
+
 					<?php
 
 			if ( $org_type->category_parent == 0 ) {
@@ -337,18 +339,30 @@ class Propel_Organizations {
 
 				$orgs = new WP_Query( $org_query );
 
-				if ( $orgs->have_posts() ): while ( $orgs->have_posts() ):
+				if ( $orgs->have_posts() ):
 
-					$orgs->the_post();
+					while ( $orgs->have_posts() ):
 
-					$selected = $org == get_the_id() ? 'selected' : '';
+						$orgs->the_post();
 
-					echo '<option value="' . get_the_id() . '" ' . $selected . '>' . get_the_title() . '</option>';
+						$selected = $org == get_the_id() ? 'selected' : '';
 
-				endwhile; endif;
+						echo '<option value="' . get_the_id() . '" ' . $selected . '>' . get_the_title() . '</option>';
+
+					endwhile;
+
+				else:
+
+					echo '<option value="">League has no ' . $org_type->slug . 's</option>';
+
+				endif;
+
+
+
 
 			}
 
+			echo '<option value="add_organization">+ Add ' . $org_type->name . '...</option>';
 
 			?>
 						</select>
@@ -508,6 +522,7 @@ class Propel_Organizations {
 	 * @author caseypatrickdriscoll
 	 *
 	 * @created 2015-02-12 15:16:29
+	 * @edited  2015-02-25 15:39:41
 	 *
 	 * @param int   $order_id   The order id
 	 *
@@ -518,8 +533,54 @@ class Propel_Organizations {
 		$user_id = $order->user_id;
 
 		foreach ( $_POST as $key => $value) {
-			if ( substr( $key, 0, 11) == "propel_org_" ) {
-				update_usermeta( $user_id, $key, $value );
+
+			if ( substr( $key, 0, 11 ) == "propel_org_" && $value != "add_organization" ) {
+				update_user_meta( $user_id, $key, $value );
+			}
+
+			if ( substr( $key, 0, 15 ) == "new_propel_org_" ) {
+
+				add_filter( 'userpro_pre_profile_update_filters', array( $this, 'update_form_array' ) );
+
+				$org = array(
+					'post_title'  => wp_strip_all_tags( $value ),
+					'post_status' => 'draft',
+					'post_type'   => 'propel_org',
+				);
+
+				$org_type = str_replace( 'new_propel_org_', '', $key );
+
+				// Look up the parent type of the current type, if it exists
+				// For example, find the parent of a 'team', which would be a 'league'
+				$org_type = get_term_by( 'slug', $org_type, 'org_type' );
+
+				// We need to set the 'post_parent' to the ID of the parent post
+				if ( $org_type->parent > 0 ) {
+
+					// get_term returns a WP_Term object
+					$org_type_parent = get_term( $org_type->parent, 'org_type' );
+
+					$org['post_parent'] = $_POST['propel_org_' . $org_type_parent->slug];
+
+				}
+
+				$exists = get_page_by_title( $value, OBJECT, 'propel_org' );
+
+				if ( ! empty( $exists ) ) {
+					update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $exists->ID );
+					$_POST['propel_org_' . $org_type->slug] = $exists->ID;
+
+					continue;
+				}
+
+				$org = wp_insert_post( $org );
+
+				$_POST['propel_org_' . $org_type->slug] = $org;
+
+				update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $org );
+
+				wp_set_object_terms( $org, $org_type->name, 'org_type' );
+
 			}
 		}
 	}
