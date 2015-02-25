@@ -6,6 +6,8 @@ jQuery( document ).ready( function() {
 
 	jQuery( '.propel-org' ).on( 'change', function(e) {
 
+		if ( ! e.hasOwnProperty( 'originalEvent' ) ) return;
+
 		if ( jQuery( e.target ).val() == 'add_organization' )
 			addOrganization( e.target.id );
 		else
