@@ -91,7 +91,7 @@ class Propel_Organizations {
 	 */
 	function render_user_fields( $user ) {
 
-		wp_localize_script( 'propel-orgs-user', 'data', array( 'user_id' => $user->ID ) );
+		wp_localize_script( 'propel-orgs-user', 'data', array( 'user_id' => $user->ID, 'public' => false ) );
 
 		wp_enqueue_script( 'propel-orgs-user' );
 
@@ -191,7 +191,7 @@ class Propel_Organizations {
 
 		$user = wp_get_current_user();
 
-		wp_localize_script( 'propel_orgs_userpro', 'data', array( 'args' => $args ) );
+		wp_localize_script( 'propel_orgs_userpro', 'data', array( 'args' => $args, 'public' => true ) );
 
 		wp_enqueue_script( 'propel_orgs_userpro' );
 
@@ -382,7 +382,6 @@ class Propel_Organizations {
 
 		$org_query = array(
 			'post_type'   => 'propel_org',
-			'post_status' => array( 'publish', 'draft' ),
 			'nopaging'    => 1,
 			'post_parent' => $parent,
 			'tax_query'   => array( array(
@@ -392,6 +391,11 @@ class Propel_Organizations {
 				'include_children' => 0
 			) )
 		);
+
+		if ( $_POST['public'] == true )
+			$org_query['post_status'] = array( 'publish' );
+		else
+			$org_query['post_status'] = array( 'publish', 'draft' );
 
 		$child_orgs = new WP_Query( $org_query );
 

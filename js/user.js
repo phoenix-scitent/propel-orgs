@@ -34,10 +34,10 @@ function setChildOrgs() {
 			'action'  : 'get_child_orgs',
 			'parent'  : parent,
 			'type'    : parentType,
-			'user_id' : data.user_id
+			'user_id' : data.user_id,
+			'public'  : data.public
 		},
 		function( response ) {
-			console.log( response );
 			if ( response.data.html.length > 0 )
 				jQuery( '#' + response.data.child ).html( response.data.html ).attr( 'disabled', false);
 			else
