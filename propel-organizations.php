@@ -409,6 +409,8 @@ class Propel_Organizations {
 
 		endwhile; endif;
 
+		$out .= '<option value="add_organization">+ Add ' . $type[0]->name . '...</option>';
+
 		wp_send_json_success( array( 'html' => $out, 'child' => $type[0]->slug ) );
 	}
 
@@ -464,6 +466,8 @@ class Propel_Organizations {
 
 				if ( ! empty( $exists ) ) {
 					update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $exists->ID );
+					$_POST['propel_org_' . $org_type->slug] = $exists->ID;
+
 					continue;
 				}
 
@@ -473,7 +477,8 @@ class Propel_Organizations {
 
 				update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $org );
 
-				wp_set_object_terms( $org, $org_type->term_taxonomy_id, 'org_type' );
+				wp_set_object_terms( $org, $org_type->name, 'org_type' );
+
 			}
 
 		}
