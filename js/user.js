@@ -10,9 +10,16 @@ jQuery( document ).ready( function() {
 
 		if ( jQuery( e.target ).val() == 'add_organization' )
 			addOrganization( e.target.id );
-		else
-			setChildOrgs();
-			
+
+	} );
+
+	jQuery( '.propel-org.parent' ).on( 'change', function(e) {
+
+		if ( ! e.hasOwnProperty( 'originalEvent' ) ) return;
+
+		if ( jQuery( e.target ).val() != 'add_organization' )
+			setChildOrgs( e.target.id );
+
 	} );
 } );
 
@@ -30,6 +37,8 @@ function setChildOrgs() {
 
 	if ( parent == '' ) return;
 
+	jQuery( '.spinner-' + jQuery( '.propel-org.parent' ).attr( 'id' ) ).show();
+
 	jQuery.post(
 		'/wp-admin/admin-ajax.php',
 		{
@@ -40,10 +49,8 @@ function setChildOrgs() {
 			'public'  : data.public
 		},
 		function( response ) {
-			if ( response.data.html.length > 0 )
-				jQuery( '#' + response.data.child ).html( response.data.html ).attr( 'disabled', false);
-			else
-				jQuery( '#' + response.data.child ).html( '<option value="">League has no teams</option>' ).attr( 'disabled', true );
+			jQuery( '.spinner-' + response.data.parent ).hide();
+			jQuery( '#' + response.data.child ).html( response.data.html ).attr( 'disabled', false);
 		}
 	);
 

@@ -119,6 +119,7 @@ class Propel_Organizations {
 				<tr class="form-field">
 					<th>
 						<label for="<?php echo $org_type->slug; ?>"><?php echo $org_type->name; ?></label>
+						<img class="spinner-<?php echo $org_type->slug; ?>" src="/wp-admin/images/spinner.gif" style="display:none;width:10px;height:10px;" />
 					</th>
 					<td>
 						<select
@@ -214,6 +215,7 @@ class Propel_Organizations {
 			<div class="userpro-field">
 				<div class="userpro-label">
 					<label for="<?php echo $org_type->slug; ?>"><?php echo $org_type->name; ?></label>
+					<img class="spinner-<?php echo $org_type->slug; ?>" src="/wp-admin/images/spinner.gif" style="display:none;width:15px;height:15px;" />
 				</div>
 				<div class="userpro-input">
 					<select
@@ -403,19 +405,29 @@ class Propel_Organizations {
 
 		$out = '';
 
-		if ( $child_orgs->have_posts() ): while ( $child_orgs->have_posts() ):
+		if ( $child_orgs->have_posts() ):
 
-			$child_orgs->the_post();
+			while ( $child_orgs->have_posts() ):
 
-			$selected = $org == get_the_id() ? 'selected' : '';
+				$child_orgs->the_post();
 
-			$out .= '<option value="' . get_the_id() . '" ' . $selected . '>' . get_the_title() . '</option>';
+				$selected = $org == get_the_id() ? 'selected' : '';
 
-		endwhile; endif;
+				$out .= '<option value="' . get_the_id() . '" ' . $selected . '>' . get_the_title() . '</option>';
+
+			endwhile;
+
+		else:
+
+			$out .= '<option value="">League has no ' . $type[0]->slug . 's</option>';
+
+		endif;
 
 		$out .= '<option value="add_organization">+ Add ' . $type[0]->name . '...</option>';
 
-		wp_send_json_success( array( 'html' => $out, 'child' => $type[0]->slug ) );
+		$parentType = get_term( $parentType, 'org_type' );
+
+		wp_send_json_success( array( 'html' => $out, 'parent' => $parentType->slug, 'child' => $type[0]->slug ) );
 	}
 
 
