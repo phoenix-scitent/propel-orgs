@@ -135,9 +135,10 @@ class Propel_Organizations {
 							if ( $org_type->category_parent == 0 ) {
 
 								$org_query = array(
-									'post_type' => 'propel_org',
-									'nopaging'  => 1,
-									'tax_query' => array( array(
+									'post_type'   => 'propel_org',
+									'post_status' => array( 'publish', 'draft' ),
+									'nopaging'    => 1,
+									'tax_query'   => array( array(
 										'taxonomy'         => 'org_type',
 										'field'            => 'slug',
 										'terms'            => $org_type->slug,
@@ -381,6 +382,7 @@ class Propel_Organizations {
 
 		$org_query = array(
 			'post_type'   => 'propel_org',
+			'post_status' => array( 'publish', 'draft' ),
 			'nopaging'    => 1,
 			'post_parent' => $parent,
 			'tax_query'   => array( array(
@@ -434,8 +436,6 @@ class Propel_Organizations {
 
 			if ( substr( $key, 0, 15 ) == "new_propel_org_" ) {
 
-				$org_type = str_replace( 'new_propel_org_', '', $key );
-
 				add_filter( 'userpro_pre_profile_update_filters', array( $this, 'update_form_array' ) );
 
 				$org = array(
@@ -444,22 +444,36 @@ class Propel_Organizations {
 					'post_type'   => 'propel_org',
 				);
 
+				$org_type = str_replace( 'new_propel_org_', '', $key );
+
+				// Look up the parent type of the current type, if it exists
+				// For example, find the parent of a 'team', which would be a 'league'
+				$org_type = get_term_by( 'slug', $org_type, 'org_type' );
+
+				// We need to set the 'post_parent' to the ID of the parent post
+				if ( $org_type->parent > 0 ) {
+
+					// get_term returns a WP_Term object
+					$org_type_parent = get_term( $org_type->parent, 'org_type' );
+
+					$org['post_parent'] = $_POST['propel_org_' . $org_type_parent->slug];
+
+				}
+
 				$exists = get_page_by_title( $value, OBJECT, 'propel_org' );
 
 				if ( ! empty( $exists ) ) {
-					update_user_meta( $user_id, 'propel_org_' . $org_type, $exists->ID );
+					update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $exists->ID );
 					continue;
 				}
 
 				$org = wp_insert_post( $org );
 
-				$_POST['propel_org_' . $org_type] = $org;
+				$_POST['propel_org_' . $org_type->slug] = $org;
 
-				update_user_meta( $user_id, 'propel_org_' . $org_type, $org );
+				update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $org );
 
-				$type = get_term_by( 'name', $org_type, 'org_type' );
-
-				wp_set_object_terms( $org, (int)$type->term_id, 'org_type' );
+				wp_set_object_terms( $org, $org_type->term_taxonomy_id, 'org_type' );
 			}
 
 		}
