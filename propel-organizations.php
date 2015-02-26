@@ -82,6 +82,7 @@ class Propel_Organizations {
 	 * @author caseypatrickdriscoll
 	 *
 	 * @created 2015-02-12 11:12:34
+	 * @edited  2015-02-26 14:55:02  - sorts orgs by ASC
 	 *
 	 * @param WP_User   $user   The WP_User object
 	 *
@@ -139,6 +140,8 @@ class Propel_Organizations {
 									'post_type'   => 'propel_org',
 									'post_status' => array( 'publish', 'draft' ),
 									'nopaging'    => 1,
+									'orderby'     => 'name',
+									'order'       => 'ASC',
 									'tax_query'   => array( array(
 										'taxonomy'         => 'org_type',
 										'field'            => 'slug',
@@ -178,6 +181,7 @@ class Propel_Organizations {
 	 * @author caseypatrickdriscoll
 	 *
 	 * @created 2015-02-12 14:43:46
+	 * @edited  2015-02-26 14:54:51 - sorts orgs by ASC
 	 *
 	 * @param  Array   $user   The WP_User object
 	 *
@@ -235,6 +239,8 @@ class Propel_Organizations {
 									$org_query = array(
 										'post_type' => 'propel_org',
 										'nopaging'  => 1,
+										'orderby'   => 'name',
+										'order'     => 'ASC',
 										'tax_query' => array( array(
 											'taxonomy'         => 'org_type',
 											'field'            => 'slug',
@@ -278,6 +284,7 @@ class Propel_Organizations {
 	 *
 	 * @created 2015-02-12 15:16:12
 	 * @edited  2015-02-25 15:33:59
+	 * @edited  2015-02-26 14:54:35 - sorts orgs by ASC
 	 *
 	 * @param  Array   $args
 	 *
@@ -328,11 +335,13 @@ class Propel_Organizations {
 
 				$org_query = array(
 					'post_type' => 'propel_org',
-					'nopaging' => 1,
+					'nopaging'  => 1,
+					'orderby'   => 'name',
+					'order'     => 'ASC',
 					'tax_query' => array( array(
-						'taxonomy' => 'org_type',
-						'field' => 'slug',
-						'terms' => $org_type->slug,
+						'taxonomy'         => 'org_type',
+						'field'            => 'slug',
+						'terms'            => $org_type->slug,
 						'include_children' => 0
 					) )
 				);
@@ -379,6 +388,7 @@ class Propel_Organizations {
 	 * @author  caseypatrickdriscoll
 	 *
 	 * @created 2015-02-12 11:07:39
+	 * @edited  2015-02-26 14:54:08 - sorts orgs by ASC
 	 *
 	 * @return  json with 'options' in html
 	 */
@@ -400,6 +410,8 @@ class Propel_Organizations {
 			'post_type'   => 'propel_org',
 			'nopaging'    => 1,
 			'post_parent' => $parent,
+			'orderby'     => 'name',
+			'order'       => 'ASC',
 			'tax_query'   => array( array(
 				'taxonomy'         => 'org_type',
 				'field'            => 'slug',
