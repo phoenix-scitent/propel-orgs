@@ -19,6 +19,8 @@ class Propel_Org {
 		add_filter( 'gettext', array( $this, 'custom_enter_title' ) );
 
 
+		add_filter( 'page_attributes_dropdown_pages_args', array( $this, 'dropdown_pages_args' ), 1, 1 );
+
 
 	}
 
@@ -188,6 +190,32 @@ class Propel_Org {
 			return 'Enter org name';
 
 		return $input;
+	}
+
+
+	/**
+	 * Some propel_orgs are in 'draft' status because they were created by the public
+	 * The don't show in the dropdown 'Attributes' list on the post edit page, so it looks like that propel_org has no parent
+	 *
+	 * This changes the query for the 'Attributes' dropdown so all propel_orgs, including drafts, show appropriately.
+	 *
+	 * Taken from http://wordpress.stackexchange.com/questions/3346/how-can-i-set-a-draft-page-as-parent-without-publishing
+	 *
+	 * @author caseypatrickdriscoll
+	 *
+	 * @created 2015-02-27 10:03:40
+	 *
+	 * @filter page_attributes_dropdown_pages_args
+	 *
+	 * @param  array   $dropdown_args   The arguments for the WP_Query
+	 *
+	 * @return array   $dropdown_args   The arguments for the WP_Query
+	 */
+	function dropdown_pages_args( $dropdown_args ) {
+
+		$dropdown_args['post_status'] = array( 'publish', 'draft' );
+
+		return $dropdown_args;
 	}
 
 }
