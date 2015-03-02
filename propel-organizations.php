@@ -463,6 +463,7 @@ class Propel_Organizations {
 	 * @author  caseypatrickdriscoll
 	 *
 	 * @created 2015-02-12 13:58:15
+	 * @edited  2015-03-02 11:26:38 - Adds org to user meta
 	 *
 	 * @param   int   $user_id   The user id
 	 *
@@ -472,12 +473,29 @@ class Propel_Organizations {
 	 */
 	function save_user_fields( $user_id ) {
 
+		// Work through each POST item, looking for the 'propel_org_' keys
 		foreach ( $_POST as $key => $value) {
 
+			// Simple case, saving a org id that already exists
 			if ( substr( $key, 0, 11 ) == "propel_org_" && $value != "add_organization" ) {
+
+				// Save the selected meta with key as is (for example, propel_org_team)
 				update_user_meta( $user_id, $key, $value );
+
+				// Save the selected meta as 'propel_okm_org_id' for OKM key generation [Propel_LMS::request_keys()]
+				//   (if the current org_type is the privileged one)
+				$propel_orgs = get_option( 'propel-orgs' );
+
+				$org_type = get_term_by( 'slug', substr( $key, 11 ), 'org_type' );
+				$org_type = $org_type->term_id;
+
+				if ( isset( $propel_orgs['org_type_priority'] ) && $propel_orgs['org_type_priority'] == $org_type ) {
+					update_user_meta( $user_id, 'propel_okm_org_id', $value );
+				}
 			}
 
+			// Difficult case, saving a newly created org
+			// A field is added for every organization, so 'new_' is added for these fields
 			if ( substr( $key, 0, 15 ) == "new_propel_org_" ) {
 
 				add_filter( 'userpro_pre_profile_update_filters', array( $this, 'update_form_array' ) );
@@ -504,22 +522,32 @@ class Propel_Organizations {
 
 				}
 
+
+
+				// If the propel_org they gave you already exists, use the preexisting one
 				$exists = get_page_by_title( $value, OBJECT, 'propel_org' );
 
 				if ( ! empty( $exists ) ) {
 					update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $exists->ID );
 					$_POST['propel_org_' . $org_type->slug] = $exists->ID;
 
-					continue;
+				} else {
+					$org = wp_insert_post( $org );
+
+					update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $org );
+					$_POST['propel_org_' . $org_type->slug] = $org;
+
+					wp_set_object_terms( $org, $org_type->name, 'org_type' );
 				}
 
-				$org = wp_insert_post( $org );
+				// Save the selected meta as 'propel_okm_org_id' for OKM key generation [Propel_LMS::request_keys()]
+				//   (if the current org_type is the privileged one)
+				$propel_orgs = get_option( 'propel-orgs' );
 
-				$_POST['propel_org_' . $org_type->slug] = $org;
+				if ( isset( $propel_orgs['org_type_priority'] ) && $propel_orgs['org_type_priority'] == $org_type->term_id ) {
+					update_user_meta( $user_id, 'propel_okm_org_id', $value );
+				}
 
-				update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $org );
-
-				wp_set_object_terms( $org, $org_type->name, 'org_type' );
 
 			}
 
