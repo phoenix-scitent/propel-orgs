@@ -12,6 +12,9 @@ class Propel_Org_Settings {
 
 		add_action( 'wp_ajax_import_propel_orgs', array( $this, 'ajax_import_propel_orgs' ) );
 
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
+
+
 
 	}
 
@@ -42,10 +45,10 @@ class Propel_Org_Settings {
 
 		add_submenu_page(
 			'edit.php?post_type=propel_org',
-			'Import PROPeL Orgs',
-			'Import',
+			'PROPeL Orgs Settings',
+			'Settings',
 			'edit_others_posts',
-			'import-propel-orgs',
+			'propel-orgs-settings',
 			array( $this, 'render' )
 		);
 
@@ -64,28 +67,39 @@ class Propel_Org_Settings {
 	function render() {
 		wp_enqueue_script( 'propel_groups_settings' );
 
-		$current = isset( $_GET['tab'] ) ? $_GET['tab'] : 'import';
+		$current = isset( $_GET['tab'] ) ? $_GET['tab'] : 'settings';
 
 		$tabs = array(
-			'import' => 'Import'
+			'settings' => 'Settings',
+			'import'   => 'Import'
 		);
 
 		echo '<div class="wrap">';
 
-		echo '<h2>PROPeL Groups</h2>';
+		echo '<h2>PROPeL Orgs Settings</h2>';
 
 		echo '<h2 class="nav-tab-wrapper">';
+
 		foreach( $tabs as $tab => $name ) {
+
 			$class = ( $tab == $current ) ? ' nav-tab-active' : '';
-			echo "<a class='nav-tab$class' href='?page=propel-groups&tab=$tab'>$name</a>";
+			echo "<a class='nav-tab$class' href='?post_type=propel_org&page=propel-orgs-settings&tab=$tab'>$name</a>";
 
 		}
+
 		echo '</h2>';
+
+		echo '<div class="wrap">';
+
 		?>
 
 		<?php
 
 		switch ( $current ) {
+
+			case 'settings':
+				self::render_settings_tab();
+				break;
 
 			case 'import':
 				self::render_import_tab();
@@ -94,8 +108,56 @@ class Propel_Org_Settings {
 		}
 
 		?>
+			</div>
     </div>
     <?php
+
+	}
+
+
+	function register_settings() {
+		register_setting( 'propel-orgs', 'propel-orgs' );
+	}
+
+
+	static function render_settings_tab() {
+
+		// Rank the order of the org_type
+
+		echo '<form method="post" action="options.php">';
+
+		settings_fields( 'propel-orgs' );
+		$settings = get_option( 'propel-orgs' );
+
+
+		$org_types = get_terms( array( 'org_type' ) );
+
+		$select = '<select name="propel-orgs[org_type_priority]">';
+
+		foreach ( $org_types as $org_type ) {
+
+			$selected = $settings['org_type_priority'] == $org_type->term_id ? 'selected' : '';
+
+			$select .= '<option value="' . $org_type->term_id . '" ' . $selected . '>' . $org_type->name . '</option>';
+
+		}
+
+		$select .= '</select>';
+
+		?>
+
+		<table class="form-table">
+			<tr valign="top">
+				<th scope="row">Org Type Priority</th>
+				<td><?php echo $select; ?></td>
+			</tr>
+		</table>
+
+		<?php
+
+		submit_button();
+
+		echo '</form>';
 
 	}
 
