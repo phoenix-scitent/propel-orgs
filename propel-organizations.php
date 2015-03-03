@@ -119,8 +119,11 @@ class Propel_Organizations {
 				?>
 				<tr class="form-field">
 					<th>
-						<label for="<?php echo $org_type->slug; ?>"><?php echo $org_type->name; ?></label>
-						<img class="spinner-<?php echo $org_type->slug; ?>" src="/wp-admin/images/spinner.gif" style="display:none;width:10px;height:10px;" />
+						<label for="<?php echo $org_type->slug; ?>">
+							<img class="spinner-<?php echo $org_type->slug; ?>" src="/wp-admin/images/spinner.gif" style="display:none;width:15px;height:15px;" />
+							<?php echo $org_type->name; ?>
+						</label>
+
 					</th>
 					<td>
 						<select

@@ -27,7 +27,7 @@ User Stories
 Here is a set of user tracks this plugin covers:
 
 
-USERPRO
+USERPRO [Public, you should NOT see 'draft' orgs]
 
 - New User User Pro Registration, select League and Team
   - Click [Activate your Key](http://strokeandturn.dev/activate-key/)
@@ -43,9 +43,10 @@ USERPRO
   - Click the Register button
   - propel_okm_org_id and propel_org_team both equal 3385
 
-WOOCOMMERCE
 
-- New User Registration during WooCommerce Purchase, select League and team
+WOOCOMMERCE [Public, you should NOT see 'draft' orgs]
+
+- New User Registration during WooCommerce Purchase, select League and Team
   - Add a key to the cart
   - During checkout, create a new user
   - Select a currently available League and Team (don't create a new one)
@@ -55,15 +56,45 @@ WOOCOMMERCE
 - New User Registration during WooCommerce Purchase, select League and create a new Team
   - Add a key to the cart
   - During checkout, create a new user
-  - Select a currently available League and Team (don't create a new one)
+  - Select a currently available League and create a new Team
   - Enter CC information and purchase
   - propel_okm_org_id and propel_org_team both equal 3392
 
-WP-ADMIN
+
+WP-ADMIN [Private, you SHOULD see 'draft' orgs]
+
+/wp-admin/user-edit.php
+
+- User Edit, select League and Team
+  - Go to /wp-admin/users.php and select a user to edit
+  - Select a currently available League and Team (don't create a new one)
+  - Update User
+
+- User Edit, select League and create a new Team
+  - Go to /wp-admin/users.php and select a user to edit
+  - Select a currently available League and create a new Team
+  - Update User
+
+/wp-admin/profile.php
+
+- User Edit, select League and Team
+  - Go to /wp-admin/users.php and select a user to edit
+  - Select a currently available League and Team (don't create a new one)
+  - Update User
+
+- User Edit, select League and create a new Team
+  - Go to /wp-admin/users.php and select a user to edit
+  - Select a currently available League and create a new Team
+  - Update User
+
+
+
 
 
 TODO:
 =====
 
 - Add remove button for 'new_propel_org_' fields
+- Adding a new org, but org name already exists (with or without parent) (should we overwrite or notify user?)
+- Need to consider is/isnt org_admin for League/Team selection
 
