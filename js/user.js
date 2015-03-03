@@ -6,6 +6,7 @@ jQuery( document ).ready( function() {
 
 	jQuery( '.propel-org' ).on( 'change', function(e) {
 
+		// I put this here so fields wouldn't duplicate on submit cause User Pro is weird
 		if ( ! e.hasOwnProperty( 'originalEvent' ) ) return;
 
 		if ( jQuery( e.target ).val() == 'add_organization' )
@@ -58,6 +59,13 @@ function setChildOrgs() {
 		function( response ) {
 			jQuery( '.spinner-' + response.data.parent ).hide();
 			jQuery( '#' + response.data.child ).html( response.data.html ).attr( 'disabled', false);
+
+			removeOrganization( response.data.child );
+
+			if ( response.data.numChildren == 0 ) {
+				jQuery( '#' + response.data.child ).val( 'add_organization' ).trigger("change");
+				addOrganization( response.data.child )
+			}
 		}
 	);
 

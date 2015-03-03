@@ -417,6 +417,8 @@ class Propel_Organizations {
 			)
 		);
 
+		$parentType = get_term( $parentType, 'org_type' );
+
 		$org_query = array(
 			'post_type'   => 'propel_org',
 			'nopaging'    => 1,
@@ -440,9 +442,11 @@ class Propel_Organizations {
 
 		$org = get_user_meta( $user, 'propel_org_' . $type[0]->slug, 1 );
 
-		$out = '<option value="">Please select a ' . $type[0]->slug . '</option>';
+		$out = '';
 
 		if ( $child_orgs->have_posts() ):
+
+			$out .= '<option value="">Please select a ' . $type[0]->slug . '</option>';
 
 			while ( $child_orgs->have_posts() ):
 
@@ -456,15 +460,21 @@ class Propel_Organizations {
 
 		else:
 
-			$out .= '<option value="">League has no ' . $type[0]->slug . 's</option>';
+			$out .= '<option value="">' . $parentType->name . ' has no ' . $type[0]->slug . 's</option>';
 
 		endif;
 
 		$out .= '<option value="add_organization">+ Add ' . $type[0]->name . '...</option>';
 
-		$parentType = get_term( $parentType, 'org_type' );
 
-		wp_send_json_success( array( 'html' => $out, 'parent' => $parentType->slug, 'child' => $type[0]->slug ) );
+		wp_send_json_success(
+			array(
+				'html'        => $out,
+				'numChildren' => $child_orgs->found_posts,
+				'parent'      => $parentType->slug,
+				'child'       => $type[0]->slug
+			)
+		);
 	}
 
 
