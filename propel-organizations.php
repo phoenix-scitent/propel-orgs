@@ -285,6 +285,7 @@ class Propel_Organizations {
 	 * @created 2015-02-12 15:16:12
 	 * @edited  2015-02-25 15:33:59
 	 * @edited  2015-02-26 14:54:35 - sorts orgs by ASC
+	 * @edited  2015-03-03 09:50:33 - Adds spinner and better select language
 	 *
 	 * @param  Array   $args
 	 *
@@ -309,16 +310,23 @@ class Propel_Organizations {
 
 			if ( $org_type->parent == 0 ) {
 				$parent = 'parent';
+				$type = $org_type->slug;
 				$disabled = '';
 			} else {
 				$parent = '';
+				$type = get_term_by( 'id', $org_type->parent, 'org_type' );
+				$type = $type->slug . ' first';
 				$disabled = 'disabled';
 			}
 
 			?>
 
 			<p class="form-row">
-				<label for="<?php echo $org_type->slug; ?>"><?php echo $org_type->name; ?></label>
+				<label for="<?php echo $org_type->slug; ?>">
+					<?php echo $org_type->name; ?>
+					<img class="spinner-<?php echo $org_type->slug; ?>" src="/wp-admin/images/spinner.gif" style="display:none;width:15px;height:15px;" />
+				</label>
+
 				<select
 						class="propel-org <?php echo $parent; ?>"
 						id="<?php echo $org_type->slug; ?>"
@@ -326,7 +334,7 @@ class Propel_Organizations {
 						data-type="<?php echo $org_type->term_id; ?>"
 						<?php echo $disabled; ?> >
 
-						<option value="">Please select a <?php echo $org_type->slug; ?></option>
+						<option value="">Please select a <?php echo $type; ?></option>
 
 
 					<?php
