@@ -50,6 +50,13 @@ Confirmed working as of 2015-03-03 09:48:16
   - Enter CC information and purchase
   - propel_okm_org_id and propel_org_team both equal 3015
 
+- New User User Pro Registration, selected League and create a new Team
+  - Click [Activate your Key](http://strokeandturn.dev/activate-key/)
+  - Complete registration
+  - Select a currently available League and create a new Team
+  - Click the Register button
+  - propel_okm_org_id and propel_org_team both equal 3385
+
 
 TODO:
 =====
