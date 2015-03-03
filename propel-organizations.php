@@ -300,7 +300,7 @@ class Propel_Organizations {
 
 		if ( $user->ID != 0 ) return;
 
-		wp_localize_script( 'propel_orgs_woocommerce', 'data', array( 'args' => $args ) );
+		wp_localize_script( 'propel_orgs_woocommerce', 'data', array( 'args' => $args, 'public' => true ) );
 
 		wp_enqueue_script( 'propel_orgs_woocommerce' );
 
@@ -407,6 +407,7 @@ class Propel_Organizations {
 
 		$parent     = $_POST['parent'];
 		$parentType = $_POST['type'];
+		$public     = $_POST['public'];
 		$user       = $_POST['user_id'];
 
 		$type = get_categories(
@@ -433,7 +434,11 @@ class Propel_Organizations {
 			) )
 		);
 
-		if ( $_POST['public'] == true )
+		// If the 'get_child_orgs' action originated from a public request
+		// WooCommerce and UserPro are public, wp-admin is private
+		//
+		// data.public is a js variable set by the wp_localize_script in each render function
+		if ( $public )
 			$org_query['post_status'] = array( 'publish' );
 		else
 			$org_query['post_status'] = array( 'publish', 'draft' );

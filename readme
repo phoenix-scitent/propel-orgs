@@ -27,35 +27,39 @@ User Stories
 Here is a set of user tracks this plugin covers:
 
 
+USERPRO
 
-
-Confirmed working as of 2015-03-02 16:44:12
-===========================================
-
-- New User User Pro Registration, selected League and Team
+- New User User Pro Registration, select League and Team
   - Click [Activate your Key](http://strokeandturn.dev/activate-key/)
   - Complete registration
   - Select a currently available League and Team (don't create a new one)
   - Click the Register button
   - propel_okm_org_id and propel_org_team both equal 3273
 
+- New User User Pro Registration, select League and create a new Team
+  - Click [Activate your Key](http://strokeandturn.dev/activate-key/)
+  - Complete registration
+  - Select a currently available League and create a new Team
+  - Click the Register button
+  - propel_okm_org_id and propel_org_team both equal 3385
 
-Confirmed working as of 2015-03-03 09:48:16
-===========================================
+WOOCOMMERCE
 
-- New User Registration during WooCommerce Purchase, selected League and team
+- New User Registration during WooCommerce Purchase, select League and team
   - Add a key to the cart
   - During checkout, create a new user
   - Select a currently available League and Team (don't create a new one)
   - Enter CC information and purchase
   - propel_okm_org_id and propel_org_team both equal 3015
 
-- New User User Pro Registration, selected League and create a new Team
-  - Click [Activate your Key](http://strokeandturn.dev/activate-key/)
-  - Complete registration
-  - Select a currently available League and create a new Team
-  - Click the Register button
-  - propel_okm_org_id and propel_org_team both equal 3385
+- New User Registration during WooCommerce Purchase, select League and create a new Team
+  - Add a key to the cart
+  - During checkout, create a new user
+  - Select a currently available League and Team (don't create a new one)
+  - Enter CC information and purchase
+  - propel_okm_org_id and propel_org_team both equal 3392
+
+WP-ADMIN
 
 
 TODO:
