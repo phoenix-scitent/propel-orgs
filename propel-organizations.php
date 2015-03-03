@@ -429,7 +429,7 @@ class Propel_Organizations {
 
 		$org = get_user_meta( $user, 'propel_org_' . $type[0]->slug, 1 );
 
-		$out = '';
+		$out = '<option value="">Please select a ' . $type[0]->slug . '</option>';
 
 		if ( $child_orgs->have_posts() ):
 
@@ -471,13 +471,14 @@ class Propel_Organizations {
 	 * @action  personal_options_update
 	 * @action  user_register
 	 */
-	function save_user_fields( $user_id ) {
+	static function save_user_fields( $user_id ) {
 
 		// Work through each POST item, looking for the 'propel_org_' keys
 		foreach ( $_POST as $key => $value) {
 
 			// Simple case, saving a org id that already exists
-			if ( substr( $key, 0, 11 ) == "propel_org_" && $value != "add_organization" ) {
+			//   Don't add the org if the value is blank or 'add'
+			if ( substr( $key, 0, 11 ) == "propel_org_" && $value != "add_organization" && $value !== "" ) {
 
 				// Save the selected meta with key as is (for example, propel_org_team)
 				update_user_meta( $user_id, $key, $value );
@@ -490,8 +491,15 @@ class Propel_Organizations {
 				$org_type = $org_type->term_id;
 
 				if ( isset( $propel_orgs['org_type_priority'] ) && $propel_orgs['org_type_priority'] == $org_type ) {
+
 					update_user_meta( $user_id, 'propel_okm_org_id', $value );
+
+				} else if ( ! isset( $propel_orgs['org_type_priority'] ) ) {
+
+					update_user_meta( $user_id, 'propel_okm_org_id', $value );
+
 				}
+
 			}
 
 			// Difficult case, saving a newly created org
@@ -564,65 +572,16 @@ class Propel_Organizations {
 	 * @created 2015-02-12 15:16:29
 	 * @edited  2015-02-25 15:39:41
 	 *
-	 * @param int   $order_id   The order id
+	 * @param   int   $order_id   The order id
 	 *
-	 * @action woocommerce_checkout_update_order_meta
+	 * @action  woocommerce_checkout_update_order_meta
 	 */
 	function save_woocommerce_user_fields( $order_id ) {
 		$order = new WC_Order( $order_id );
 		$user_id = $order->user_id;
 
-		foreach ( $_POST as $key => $value) {
+		self::save_user_fields( $user_id );
 
-			if ( substr( $key, 0, 11 ) == "propel_org_" && $value != "add_organization" ) {
-				update_user_meta( $user_id, $key, $value );
-			}
-
-			if ( substr( $key, 0, 15 ) == "new_propel_org_" ) {
-
-				add_filter( 'userpro_pre_profile_update_filters', array( $this, 'update_form_array' ) );
-
-				$org = array(
-					'post_title'  => wp_strip_all_tags( $value ),
-					'post_status' => 'draft',
-					'post_type'   => 'propel_org',
-				);
-
-				$org_type = str_replace( 'new_propel_org_', '', $key );
-
-				// Look up the parent type of the current type, if it exists
-				// For example, find the parent of a 'team', which would be a 'league'
-				$org_type = get_term_by( 'slug', $org_type, 'org_type' );
-
-				// We need to set the 'post_parent' to the ID of the parent post
-				if ( $org_type->parent > 0 ) {
-
-					// get_term returns a WP_Term object
-					$org_type_parent = get_term( $org_type->parent, 'org_type' );
-
-					$org['post_parent'] = $_POST['propel_org_' . $org_type_parent->slug];
-
-				}
-
-				$exists = get_page_by_title( $value, OBJECT, 'propel_org' );
-
-				if ( ! empty( $exists ) ) {
-					update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $exists->ID );
-					$_POST['propel_org_' . $org_type->slug] = $exists->ID;
-
-					continue;
-				}
-
-				$org = wp_insert_post( $org );
-
-				$_POST['propel_org_' . $org_type->slug] = $org;
-
-				update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $org );
-
-				wp_set_object_terms( $org, $org_type->name, 'org_type' );
-
-			}
-		}
 	}
 
 

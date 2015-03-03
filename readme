@@ -26,4 +26,22 @@ User Stories
 
 Here is a set of user tracks this plugin covers:
 
--
+
+
+
+Confirmed working as of 2015-03-02 16:44:12
+===========================================
+
+- New User User Pro Registration, selected League and Team
+  - Click [Activate your Key](http://strokeandturn.dev/activate-key/)
+  - Complete registration
+  - Select a currently available League and Team (don't create a new one)
+  - Click the Register button
+  - propel_okm_org_id and propel_org_team both equal 3273
+
+
+TODO:
+=====
+
+- Add remove button for 'new_propel_org_' fields
+
