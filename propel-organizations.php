@@ -472,6 +472,7 @@ class Propel_Organizations {
 	 *
 	 * @created 2015-02-12 13:58:15
 	 * @edited  2015-03-02 11:26:38 - Adds org to user meta
+	 * @edited  2015-03-03 10:05:47 - Refactors for proper $org saving
 	 *
 	 * @param   int   $user_id   The user id
 	 *
@@ -547,6 +548,8 @@ class Propel_Organizations {
 					update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $exists->ID );
 					$_POST['propel_org_' . $org_type->slug] = $exists->ID;
 
+					$org = $exists->ID;
+
 				} else {
 					$org = wp_insert_post( $org );
 
@@ -561,7 +564,7 @@ class Propel_Organizations {
 				$propel_orgs = get_option( 'propel-orgs' );
 
 				if ( isset( $propel_orgs['org_type_priority'] ) && $propel_orgs['org_type_priority'] == $org_type->term_id ) {
-					update_user_meta( $user_id, 'propel_okm_org_id', $value );
+					update_user_meta( $user_id, 'propel_okm_org_id', $org );
 				}
 
 
