@@ -209,9 +209,12 @@ class Propel_Organizations {
 
 			if ( $org_type->parent == 0 ) {
 				$parent = 'parent';
+				$type = $org_type->slug;
 				$disabled = '';
 			} else {
 				$parent = '';
+				$type = get_term_by( 'id', $org_type->parent, 'org_type' );
+				$type = $type->slug . ' first';
 				$disabled = 'disabled';
 			}
 			?>
@@ -230,7 +233,7 @@ class Propel_Organizations {
 							style="height: 30px !important;"
 							<?php echo $disabled;?> >
 
-							<option value="">Please select a <?php echo $org_type->slug; ?></option>
+							<option value="">Please select a <?php echo $type; ?></option>
 
 							<?php
 
