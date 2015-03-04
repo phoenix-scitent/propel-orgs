@@ -487,15 +487,136 @@ class Propel_Organizations {
 
 
 	/**
-	 * Saves the organization user meta information
+	 * @function save_user_fields()
+	 * Saves the selected or created propel_org as user_meta information for the given user
+	 *
+	 * Every user has the ability to belong to one or more 'propel_orgs'.
+	 * These propel_orgs are stored as Custom Post Types (cpt),
+	 *   and each 'org_type' has a corresponding dropdown selector in the user form.
+	 *
+	 * The 'user form' is a form for creating and editing the User's information.
+	 * It is found in three places in core
+	 *   and we additionally hook into the WooCommerce and UserPro forms (See corresponding render_ functions)
+	 *
+	 * This method is used to save existing and newly created orgs
+	 *   to the User's profile through the use of user_meta
+	 *
+	 * It is hooked to three core actions to save at:
+	 *   - editing an arbitrary user,  /wp-admin/user-edit.php
+	 *   - editing your own user,      /wp-admin/profile.php
+	 *   - registering a new user      /wp-admin/user-new.php
+	 *
+	 * Additionally, it also is called while creating a user through WooCommerce,
+	 *   (which must be hooked separately)
+	 *
+	 * There are two possibilities in the saving algorithm
+	 *   - [Easy Case] Save a preexisting propel_org to user_meta
+	 *   - [Hard Case] First create a new propel org and then save to user_meta
+	 *
+	 * [Easy Case]
+	 * Since there are arbitrary 'types' of orgs depending on the client (for example Leagues, Teams, etc),
+	 *   and since there are an arbitrary number of orgs the user can belong to (zero, one or many),
+	 *   we need to grab each $_POST key that matches 'propel_org_*' (for example 'propel_org_league' and 'propel_org_team')
+	 *   to be sure we grab every possible propel_org the user may be attached to.
+	 *
+	 * So while looping through each $_POST key, if we find one matching 'propel_org_*',
+	 *   simply add the $value (which is the propel_org's wp_posts.ID) with the current $key to the user_meta
+	 *   (for example save $key 'propel_org_team' with $value '3300' to the given user_meta)
+	 *
+	 * [Hard Case]
+	 * If the user wishes to add a propel_org that doesn't exist,
+	 *   they have the option to 'add_organization' through an additional text field
+	 *
+	 * These text fields are added dynamically to the UI,
+	 *   one text field per propel_org dropdown,
+	 *   so they may only exist on exceptional occasions.
+	 *
+	 * Each text field borrows the name of the dropdown (propel_org_*) and prepends 'new_' to the front
+	 *
+	 * So while looping through each $_POST key, if we find one matching 'new_propel_org_*',
+	 *   we need to first create a propel_org cpt with the given name,
+	 *   then simply add the $value (which is the new propel_org's wp_posts.ID) to the user_meta.
+	 *
+	 * However, unlike the Easy Case above,
+	 *   the $key to save as the user_meta can not be 'new_propel_org_*'.
+	 *   So we must strip the '$type' from the current $key to properly save the user_meta as 'propel_org_' . $type
+	 *
+	 * Additionally, when creating a new propel_org,
+	 *   we must also retain the propel_org parental hierarchy in the cpt.
+	 *   This means if a user creates a new propel_org,
+	 *   that is the child of another propel_org, we have to assign that when we insert the new propel_org into the DB.
+	 *   (for example, adding a new Team that belongs to a League)
+	 *
+	 *   This may be confusing as the plugin allows for arbitrary relationships within the org_types
+	 *   so we can't simply hard code the relationships (if new org is Team, look for League, etc).
+	 *   However, it is pretty straight forward once you understand it.
+	 *
+	 *   To find the new propel_org's parent, we must find the parent org_type.
+	 *   We get the child $org_type by removing 'new_propel_org_' from the current key
+	 *   then looking up the $org_type with get_term_by().
+	 *   This returns a WP_Term object, which includes the parent term id at $org_type->parent.
+	 *
+	 *   If the child term has a parent term, the $org_type->parent will be something greater than 0
+	 *   If it is, look up the parent term with $org_parent_type = get_term()
+	 *   and use $org_parent_type->slug to find the propel_org parent in the $_POST array.
+	 *
+	 *   For example, we know we have an $org_type of 'team'.
+	 *   Look up the term id of 'team' by using get_term_by()
+	 *   Then, once we have the full 'team' WP_Term assigned to $org_type
+	 *   we can check to see if it has a parent term
+	 *   If $org_type->parent is greater than zero, it means the term has a parent
+	 *   Now, get the full term object of the parent 'league' get_term()
+	 *   We know the parent cpt value is stored in the $_POST array, but we didn't know what it was called
+	 *   Now that we have the term object of the parent in $org_type_parent
+	 *   we can get the wp_posts.ID value of the parent, by looking in $_POST[ 'propel_org_' . $org_type_parent->slug ]
+	 *   which in this case is $_POST['propel_org_league']
+	 *
+	 *   Now that we know the ID of the new propel_org's parent,
+	 *     we can add it to the new cpt with $org['post_parent']
+	 *
+	 *   This is very abstract and may be confusing at first, but allows for fully dynamic relationships,
+	 *   without having to push the parent-child relationship information through the UI
+	 *
+	 * Lastly, if the given new propel_org already exists, we need to do something else.
+	 *   Right now it looks it up and uses the currently existing one, but we may want a different functionality.
+	 *   @TODO
+	 *
+	 *
+	 * [Both Cases]
+	 * In both the Easy Case and the Hard Case, we need to save a duplicated user_meta piece,
+	 *   the 'propel_okm_org_id', which will be sent to the OKM during Propel_LMS::request_keys()
+	 *
+	 * The propel_okm_org_id is stored as the wp_posts.ID of propel_org that the user belongs to.
+	 * It is duplicated during this saving, so for example you will have user_metas of
+	 *   propel_org_team and propel_okm_org_id with the same propel_org ID
+	 *
+	 * Since there are possibly many propel_orgs a user belongs to,
+	 *   we need a priority to know which one to save and send to the OKM
+	 *
+	 *   This priority is saved in the PROPeL Orgs Settings page
+	 *   [/wp-admin/edit.php?post_type=propel_org&page=propel-orgs-settings]
+	 *
+	 *   For example, if we set the priority org_type to 'team',
+	 *   we will set the propel_okm_org_id to the user's team, instead of their league
+	 *
+	 *   However, if they don't have a 'team' set, propel_okm_org_id should be set to another org
+	 *   We will look for the parent of the priority org_type, up the chain until we find one set, then assigning the first one.
+	 *   If we don't find any org_type set, we will not assign a propel_okm_org_id
+	 *
+	 *
+	 * [FUBAR]
+	 * UserPro filter problem
 	 *
 	 * @author  caseypatrickdriscoll
 	 *
 	 * @created 2015-02-12 13:58:15
 	 * @edited  2015-03-02 11:26:38 - Adds org to user meta
 	 * @edited  2015-03-03 10:05:47 - Refactors for proper $org saving
+	 * @edited  2015-03-04 15:51:37 - Major logic refactoring and comments added
 	 *
 	 * @param   int   $user_id   The user id
+	 *
+	 * @from    $this->save_woocommerce_user_fields
 	 *
 	 * @action  edit_user_profile_update
 	 * @action  personal_options_update
@@ -503,36 +624,30 @@ class Propel_Organizations {
 	 */
 	static function save_user_fields( $user_id ) {
 
-		// Work through each POST item, looking for the 'propel_org_' keys
+		// An associative array of term_id => propel_org.ID for the propel_orgs the user belongs to
+		// Used during the [Both Cases] section at the end
+		$orgs = array();
+
+		// Work through each POST item, looking for 'propel_org_*' and 'new_propel_org_*' keys
+		// $key   is propel_org_* or new_propel_org_*
+		// $value is wp_posts.ID of propel_org_* or new name string of new_propel_org_*
 		foreach ( $_POST as $key => $value) {
 
-			// Simple case, saving a org id that already exists
+			// [Easy Case] saving a org id that already exists
 			//   Don't add the org if the value is blank or 'add'
 			if ( substr( $key, 0, 11 ) == "propel_org_" && $value != "add_organization" && $value !== "" ) {
 
 				// Save the selected meta with key as is (for example, propel_org_team)
 				update_user_meta( $user_id, $key, $value );
 
-				// Save the selected meta as 'propel_okm_org_id' for OKM key generation [Propel_LMS::request_keys()]
-				//   (if the current org_type is the privileged one)
-				$propel_orgs = get_option( 'propel-orgs' );
+				$org_type = get_term_by( 'slug', str_replace( 'propel_org_', '', $key ), 'org_type' );
 
-				$org_type = get_term_by( 'slug', substr( $key, 11 ), 'org_type' );
-				$org_type = $org_type->term_id;
+				$orgs[$org_type->term_id] = $value;
 
-				if ( isset( $propel_orgs['org_type_priority'] ) && $propel_orgs['org_type_priority'] == $org_type ) {
+			} /* End [Easy Case] */
 
-					update_user_meta( $user_id, 'propel_okm_org_id', $value );
 
-				} else if ( ! isset( $propel_orgs['org_type_priority'] ) ) {
-
-					update_user_meta( $user_id, 'propel_okm_org_id', $value );
-
-				}
-
-			}
-
-			// Difficult case, saving a newly created org
+			// [Hard Case] saving a newly created org
 			// A field is added for every organization, so 'new_' is added for these fields
 			if ( substr( $key, 0, 15 ) == "new_propel_org_" ) {
 
@@ -546,6 +661,8 @@ class Propel_Organizations {
 
 				$org_type = str_replace( 'new_propel_org_', '', $key );
 
+
+				/* FIND POST PARENT */
 				// Look up the parent type of the current type, if it exists
 				// For example, find the parent of a 'team', which would be a 'league'
 				$org_type = get_term_by( 'slug', $org_type, 'org_type' );
@@ -561,37 +678,112 @@ class Propel_Organizations {
 				}
 
 
-
+				/* EXISTING PROPEL_ORG */
 				// If the propel_org they gave you already exists, use the preexisting one
 				$exists = get_page_by_title( $value, OBJECT, 'propel_org' );
 
-				if ( ! empty( $exists ) ) {
+				if ( ! empty( $exists ) ) { // It exists, add to user
+
+					// Add to user
 					update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $exists->ID );
-					$_POST['propel_org_' . $org_type->slug] = $exists->ID;
 
-					$org = $exists->ID;
+					$new_org_id = $exists->ID;
 
-				} else {
-					$org = wp_insert_post( $org );
+				} else { // It doesn't exist, create propel_org and add to user
 
-					update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $org );
-					$_POST['propel_org_' . $org_type->slug] = $org;
+					// Create propel_org
+					$new_org_id = wp_insert_post( $org );
 
-					wp_set_object_terms( $org, $org_type->name, 'org_type' );
+					// Add to user
+					update_user_meta( $user_id, 'propel_org_' . $org_type->slug, $new_org_id );
+
+					// Terms must be set in a separate function
+					wp_set_object_terms( $new_org_id, $org_type->name, 'org_type' );
+
 				}
 
-				// Save the selected meta as 'propel_okm_org_id' for OKM key generation [Propel_LMS::request_keys()]
-				//   (if the current org_type is the privileged one)
-				$propel_orgs = get_option( 'propel-orgs' );
-
-				if ( isset( $propel_orgs['org_type_priority'] ) && $propel_orgs['org_type_priority'] == $org_type->term_id ) {
-					update_user_meta( $user_id, 'propel_okm_org_id', $org );
-				}
+				// Push org_id to array for later use in [Both Cases]
+				$orgs[$org_type->term_id] = $new_org_id;
 
 
+				// @TODO This is an ugly work around.
+				// UserPro RESAVES all the $_POST information with their $form variable ( see $this->update_form_array )
+				// So when we create a new org, we must copy that info to the 'propel_org_*' item
+				$_POST['propel_org_' . $org_type->slug] = $new_org_id;
+
+
+			} /* End [Hard Case] */
+
+		} /* End foreach $_POST */
+
+
+		// [Both Cases]
+		// Save the selected meta as 'propel_okm_org_id' for OKM key generation [Propel_LMS::request_keys()]
+		//   (if the current org_type is the privileged one)
+		$propel_orgs_options = get_option( 'propel-orgs' );
+
+		// A term ID
+		$org_type_priority = $propel_orgs_options['org_type_priority'];
+
+		// If there is a priority org_type set,
+		if ( isset( $propel_orgs['org_type_priority'] ) ) {
+
+			if ( array_key_exists( $org_type_priority, $orgs ) ) {
+				// set the propel_okm_org_id to the propel_org id
+				$propel_okm_org_id = $orgs[$org_type_priority];
+			} else {
+				// otherwise, use the term parent
+				$propel_okm_org_id = self::find_parent_okm_org_id( $org_type_priority, $orgs );
+			}
+
+		// Else if there is no priority set, just grab the last org ID
+		} else {
+			$propel_okm_org_id = $orgs[ key( array_slice( $orgs, -1, 1, TRUE ) ) ];
+		}
+
+		update_user_meta( $user_id, 'propel_okm_org_id', $propel_okm_org_id );
+
+	}
+
+
+	/**
+	 * A recursive function to find the parent term in the given array
+	 *
+	 * @author  caseypatrickdriscoll
+	 *
+	 * @created 2015-03-04 15:16:10
+	 *
+	 * @from    $this->save_user_fields
+	 * @from    $this->find_parent_okm_org_id
+	 *
+	 * @param   int     $child               The given WP_Term->term_id of the org_type
+	 * @param   array   $orgs                The associative array of term_id => propel_org.ID (team => cpt ID)
+	 *
+	 * @return  int     $propel_okm_org_id   The wp_posts.ID of the desired propel_org
+	 */
+	static protected function find_parent_okm_org_id( $child, $orgs ) {
+
+		if ( $child == 0 ) {
+
+			$propel_okm_org_id = '';
+
+		} else {
+
+			$child_term = get_term( $child, 'org_type' );
+
+			$parent = $child_term->parent;
+
+			if ( array_key_exists( $parent, $orgs ) ) {
+				// set the propel_okm_org_id to the propel_org id
+				$propel_okm_org_id = $orgs[$parent];
+			} else {
+				// otherwise, use the term parent
+				$propel_okm_org_id = self::find_parent_okm_org_id( $parent, $orgs );
 			}
 
 		}
+
+		return $propel_okm_org_id;
 
 	}
 

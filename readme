@@ -36,12 +36,25 @@ USERPRO [Public, you should NOT see 'draft' orgs]
   - Click the Register button
   - propel_okm_org_id and propel_org_team both equal 3273
 
+  + 2015-03-04 15:29:46
+
 - New User User Pro Registration, select League and create a new Team
   - Click [Activate your Key](http://strokeandturn.dev/activate-key/)
   - Complete registration
   - Select a currently available League and create a new Team
   - Click the Register button
   - propel_okm_org_id and propel_org_team both equal 3385
+
+  + 2015-03-04 15:31:58
+
+- New User User Pro Registration, select League with no Team (should make League propel_okm_org_id)
+  - Click [Activate your Key](http://strokeandturn.dev/activate-key/)
+  - Complete registration
+  - Select a currently available League with no team
+  - Click the Register button
+  - propel_okm_org_id and propel_org_league both equal 3256, no propel_org_team
+
+  + 2015-03-04 15:50:40
 
 
 WOOCOMMERCE [Public, you should NOT see 'draft' orgs]
@@ -97,4 +110,5 @@ TODO:
 - Add remove button for 'new_propel_org_' fields
 - Adding a new org, but org name already exists (with or without parent) (should we overwrite or notify user?)
 - Need to consider is/isnt org_admin for League/Team selection
+- Make sure saving appropriate propel_org_xxxxx to propel_okm_org_id (team, leagure, or none at all)
 
