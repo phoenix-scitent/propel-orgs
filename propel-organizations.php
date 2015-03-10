@@ -3,7 +3,7 @@
  * Plugin Name: PROPeL Organizations
  * Author: Casey Patrick Driscoll
  * Author URI: http://caseypatrickdriscoll.com
- * Version: 2015-03-10 16:40:15
+ * Version: 2015-03-10 17:21:02
  * Description: A plugin for adding users to organizations
  */
 

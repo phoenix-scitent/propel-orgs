@@ -86,24 +86,58 @@ USERPRO [Public, you should NOT see 'draft' orgs]
 
 WOOCOMMERCE [Public, you should NOT see 'draft' orgs]
 
-- New User Registration during WooCommerce Purchase, select League (no org_id) and Team
+- New User Registration during WooCommerce Purchase, no League and no Team
   - Add a key to the cart
   - During checkout, create a new user
-  - Select a currently available League and Team (don't create a new one)
+  - Don't select a League or Team and don't create a new one)
   - Enter CC information and purchase
-  - propel_okm_org_id and propel_org_team both equal 3015
 
-- New User Registration during WooCommerce Purchase, select League and create a new Team
+  √ There should be no propel_org_league or propel_org_team
+  √ There should be no propel_okm_org_id
+  √ There should be no organization_id in the OKM
+
+  + 2015-03-10 16:58:41 caseypatrickdriscoll
+
+- New User Registration during WooCommerce Purchase, select League (no _org_id) and Team (no _org_id)
   - Add a key to the cart
   - During checkout, create a new user
-  - Select a currently available League and create a new Team
+  - Select a currently available League and Team that don't have _org_ids (don't create a new one)
   - Enter CC information and purchase
-  - propel_okm_org_id and propel_org_team both equal 3392
 
-- New User Registration during WooCommerce Purchase, select League (with org_id) and no Team
+  √ propel_org_league and propel_org_team should have records
+  √ propel_okm_org_id should not exist
+  √ There should be no organization_id in the OKM
+
+  + 2015-03-10 17:11:44 caseypatrickdriscoll
+
+- New User Registration during WooCommerce Purchase, select League (no _org_id) and create a new Team
   - Add a key to the cart
   - During checkout, create a new user
-  - Select a currently available League (one with an org_id) and don't select a Team
+  - Select a currently available League with no _org_id and create a new Team
+  - Enter CC information and purchase
+
+  √ propel_org_league and propel_org_team should have records
+  √ propel_okm_org_id should not exist
+  √ There should be no organization_id in the OKM
+
+  + 2015-03-10 17:14:09 caseypatrickdriscoll
+
+- New User Registration during WooCommerce Purchase, select League (no _org_id) and no Team
+  - Add a key to the cart
+  - During checkout, create a new user
+  - Select a currently available League with no _org_id and select no Team
+  - Enter CC information and purchase
+
+  √ propel_org_league should have a record
+  √ propel_okm_org_id should not exist
+  √ There should be no organization_id in the OKM
+
+  + 2015-03-10 17:18:53 caseypatrickdriscoll
+
+- New User Registration during WooCommerce Purchase, select League (with _org_id) and no Team
+  - Add a key to the cart
+  - During checkout, create a new user
+  - Select a currently available League (one with an _org_id) and don't select a Team
   - Enter CC information and purchase
 
   √ propel_okm_org_id and propel_org_league both equal 3405
@@ -112,7 +146,7 @@ WOOCOMMERCE [Public, you should NOT see 'draft' orgs]
   + 2015-03-10 15:53:32 caseypatrickdriscoll
   + 2015-03-10 16:39:32 caseypatrickdriscoll
 
-- New User Registration during WooCommerce Purchase, select League (with org_id) and create new Team
+- New User Registration during WooCommerce Purchase, select League (with _org_id) and create new Team
   - Add a key to the cart
   - During checkout, create a new user
   - Select a currently available League (one with an org_id) and create a new Team
@@ -124,6 +158,25 @@ WOOCOMMERCE [Public, you should NOT see 'draft' orgs]
 
   + 2015-03-10 16:36:18 caseypatrickdriscoll
 
+- Previous regular customer during WooCommerce Purchase, has League (with org_id) but no Team
+  - Add a key to the cart
+  - No League or Team selection
+  - Select CC information and purchase
+
+  √ propel_okm_org_id and propel_org_league both equal (should not change)
+  √ Keys appear in OKM under organization_id 14 (League _org_id)
+
+  + 2015-03-10 16:48:48 caseypatrickdriscoll @TODO: when user buys more keys, activates duplicate in OKM, but not propel_enrollments
+
+- Previous regular customer during WooCommerce Purchase, no League and no Team
+  - Add a key to the cart
+  - Enter CC information and purchase
+
+  √ There should be no propel_org_league or propel_org_team
+  √ There should be no propel_okm_org_id
+  √ There should be no organization_id in the OKM
+
+  + 2015-03-10 17:00:27 caseypatrickdriscoll
 
 
 WP-ADMIN [Private, you SHOULD see 'draft' orgs]
