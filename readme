@@ -52,9 +52,36 @@ USERPRO [Public, you should NOT see 'draft' orgs]
   - Complete registration
   - Select a currently available League with no team
   - Click the Register button
-  - propel_okm_org_id and propel_org_league both equal 3256, no propel_org_team
+  - propel_okm_org_id and propel_org_league both equal 3256, (made propel_org_team but empty? >:{ )
 
   + 2015-03-04 15:50:40
+
+- New User User Pro Registration, create League with no Team (should make League propel_okm_org_id)
+  - Click [Activate your Key](http://strokeandturn.dev/activate-key/)
+  - Complete registration
+  - Create a League with no team
+  - Click the Register button
+  - propel_okm_org_id and propel_org_league both equal 3397, no propel_org_team
+
+  + 2015-03-04 16:09:20
+
+- New User User Pro Registration, create League and create Team
+  - Click [Activate your Key](http://strokeandturn.dev/activate-key/)
+  - Complete registration
+  - Create a League and create a Team
+  - Click the Register button
+  - propel_okm_org_id and propel_org_league both equal 3399
+
+  + 2015-03-04 16:16:01
+
+- New User User Pro Registration, no League and no Team
+  - Click [Activate your Key](http://strokeandturn.dev/activate-key/)
+  - Complete registration
+  - Select no League and no Team
+  - Click the Register button
+  - Should not have propel_okm_org_id, propel_org_league or propel_org_team
+
+  + 2015-03-04 16:20:27 - @TODO Creates empty propel_okm_org_id and propel_org_league user_meta records
 
 
 WOOCOMMERCE [Public, you should NOT see 'draft' orgs]
@@ -72,6 +99,16 @@ WOOCOMMERCE [Public, you should NOT see 'draft' orgs]
   - Select a currently available League and create a new Team
   - Enter CC information and purchase
   - propel_okm_org_id and propel_org_team both equal 3392
+
+- New User Registration during WooCommerce Purchase, select League (with org_id) and no Team
+  - Add a key to the cart
+  - During checkout, create a new user
+  - Select a currently available League (one with an org_id) and create a new Team
+  - Enter CC information and purchase
+  √ [propel_okm_org_id and propel_org_team both equal 3405
+  √ keys appear in OKM under proper org (thekeymaster)
+
+  + 2015-03-10 15:53:32
 
 
 WP-ADMIN [Private, you SHOULD see 'draft' orgs]
@@ -111,4 +148,5 @@ TODO:
 - Adding a new org, but org name already exists (with or without parent) (should we overwrite or notify user?)
 - Need to consider is/isnt org_admin for League/Team selection
 - Make sure saving appropriate propel_org_xxxxx to propel_okm_org_id (team, leagure, or none at all)
+- UserPro adds propel_org_team if created league with no team
 

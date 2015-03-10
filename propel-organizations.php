@@ -2,6 +2,8 @@
 /**
  * Plugin Name: PROPeL Organizations
  * Author: Casey Patrick Driscoll
+ * Author URI: http://caseypatrickdriscoll.com
+ * Version: 2015-03-10 15:47:50
  * Description: A plugin for adding users to organizations
  */
 
@@ -613,6 +615,7 @@ class Propel_Organizations {
 	 * @edited  2015-03-02 11:26:38 - Adds org to user meta
 	 * @edited  2015-03-03 10:05:47 - Refactors for proper $org saving
 	 * @edited  2015-03-04 15:51:37 - Major logic refactoring and comments added
+	 * @edited  2015-03-10 15:40:06 - Refactors to prevent blank 'propel_okm_org_id' overwrite
 	 *
 	 * @param   int   $user_id   The user id
 	 *
@@ -649,7 +652,7 @@ class Propel_Organizations {
 
 			// [Hard Case] saving a newly created org
 			// A field is added for every organization, so 'new_' is added for these fields
-			if ( substr( $key, 0, 15 ) == "new_propel_org_" ) {
+			if ( substr( $key, 0, 15 ) == "new_propel_org_" && $value !== "" ) {
 
 				add_filter( 'userpro_pre_profile_update_filters', array( $this, 'update_form_array' ) );
 
@@ -720,28 +723,43 @@ class Propel_Organizations {
 		// [Both Cases]
 		// Save the selected meta as 'propel_okm_org_id' for OKM key generation [Propel_LMS::request_keys()]
 		//   (if the current org_type is the privileged one)
-		$propel_orgs_options = get_option( 'propel-orgs' );
+		$propel_orgs = get_option( 'propel-orgs' );
 
-		// A term ID
-		$org_type_priority = $propel_orgs_options['org_type_priority'];
+		// When WooCommerce is creating a new user $orgs will be full of $_POST[propel_org_*] fields from above
+		// But when an existing user buys more keys, $orgs will be empty, as there are no $_POST[propel_org_*] fields above
+		//
+		// Returning User
+		if ( empty( $orgs ) ) {
 
-		// If there is a priority org_type set,
-		if ( isset( $propel_orgs['org_type_priority'] ) ) {
+			// Don't do anything with the 'propel_okm_org_id' user_meta
 
-			if ( array_key_exists( $org_type_priority, $orgs ) ) {
-				// set the propel_okm_org_id to the propel_org id
-				$propel_okm_org_id = $orgs[$org_type_priority];
+		// New User, with $orgs set
+		} else {
+
+			// If there is a priority org_type set,
+			if ( isset( $org_type_priority ) ) {
+
+				// A term ID
+				$org_type_priority = $propel_orgs['org_type_priority'];
+
+				if ( array_key_exists( $org_type_priority, $orgs ) ) {
+					// set the propel_okm_org_id to the propel_org id
+					$propel_okm_org_id = $orgs[$org_type_priority];
+				} else {
+					// otherwise, use the term parent
+					$propel_okm_org_id = self::find_parent_okm_org_id( $org_type_priority, $orgs );
+				}
+
+			// Else if there is no priority set, just grab the last org ID
 			} else {
-				// otherwise, use the term parent
-				$propel_okm_org_id = self::find_parent_okm_org_id( $org_type_priority, $orgs );
+
+				$propel_okm_org_id = $orgs[key( array_slice( $orgs, -1, 1, TRUE ) )];
+
 			}
 
-		// Else if there is no priority set, just grab the last org ID
-		} else {
-			$propel_okm_org_id = $orgs[ key( array_slice( $orgs, -1, 1, TRUE ) ) ];
+			update_user_meta( $user_id, 'propel_okm_org_id', $propel_okm_org_id );
 		}
 
-		update_user_meta( $user_id, 'propel_okm_org_id', $propel_okm_org_id );
 
 	}
 
