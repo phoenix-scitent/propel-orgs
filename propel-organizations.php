@@ -3,7 +3,7 @@
  * Plugin Name: PROPeL Organizations
  * Author: Casey Patrick Driscoll
  * Author URI: http://caseypatrickdriscoll.com
- * Version: 2015-03-10 15:47:50
+ * Version: 2015-03-10 16:40:15
  * Description: A plugin for adding users to organizations
  */
 
@@ -616,6 +616,7 @@ class Propel_Organizations {
 	 * @edited  2015-03-03 10:05:47 - Refactors for proper $org saving
 	 * @edited  2015-03-04 15:51:37 - Major logic refactoring and comments added
 	 * @edited  2015-03-10 15:40:06 - Refactors to prevent blank 'propel_okm_org_id' overwrite
+	 * @edited  2015-03-10 16:35:11 - Refactors to only set 'propel_okm_org_id' if propel_org has _org_id
 	 *
 	 * @param   int   $user_id   The user id
 	 *
@@ -750,14 +751,24 @@ class Propel_Organizations {
 					$propel_okm_org_id = self::find_parent_okm_org_id( $org_type_priority, $orgs );
 				}
 
-			// Else if there is no priority set, just grab the last org ID
+			// Else if there is no priority set, just grab the last propel_org with an _org_id set
 			} else {
 
-				$propel_okm_org_id = $orgs[key( array_slice( $orgs, -1, 1, TRUE ) )];
+				foreach ( $orgs as $term_id => $propel_org_id ) {
+
+					// _org_id is the external OKM organization_id
+					$orgs_org_id = get_post_meta( $propel_org_id, '_org_id', true );
+
+					if ( $orgs_org_id )
+						$propel_okm_org_id = $propel_org_id;
+
+				}
 
 			}
 
-			update_user_meta( $user_id, 'propel_okm_org_id', $propel_okm_org_id );
+			if ( isset( $propel_okm_org_id ) )
+				update_user_meta( $user_id, 'propel_okm_org_id', $propel_okm_org_id );
+
 		}
 
 

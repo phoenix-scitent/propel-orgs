@@ -86,7 +86,7 @@ USERPRO [Public, you should NOT see 'draft' orgs]
 
 WOOCOMMERCE [Public, you should NOT see 'draft' orgs]
 
-- New User Registration during WooCommerce Purchase, select League and Team
+- New User Registration during WooCommerce Purchase, select League (no org_id) and Team
   - Add a key to the cart
   - During checkout, create a new user
   - Select a currently available League and Team (don't create a new one)
@@ -103,12 +103,27 @@ WOOCOMMERCE [Public, you should NOT see 'draft' orgs]
 - New User Registration during WooCommerce Purchase, select League (with org_id) and no Team
   - Add a key to the cart
   - During checkout, create a new user
+  - Select a currently available League (one with an org_id) and don't select a Team
+  - Enter CC information and purchase
+
+  √ propel_okm_org_id and propel_org_league both equal 3405
+  √ Keys appear in OKM under org_id 14 (League org_id)
+
+  + 2015-03-10 15:53:32 caseypatrickdriscoll
+  + 2015-03-10 16:39:32 caseypatrickdriscoll
+
+- New User Registration during WooCommerce Purchase, select League (with org_id) and create new Team
+  - Add a key to the cart
+  - During checkout, create a new user
   - Select a currently available League (one with an org_id) and create a new Team
   - Enter CC information and purchase
-  √ [propel_okm_org_id and propel_org_team both equal 3405
-  √ keys appear in OKM under proper org (thekeymaster)
 
-  + 2015-03-10 15:53:32
+  √ propel_okm_org_id and propel_org_league both equal 3405
+  √ New propel_org_team with unique ID 3423
+  √ Keys appear in OKM under org_id 14 (League org_id)
+
+  + 2015-03-10 16:36:18 caseypatrickdriscoll
+
 
 
 WP-ADMIN [Private, you SHOULD see 'draft' orgs]
