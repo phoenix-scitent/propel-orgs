@@ -26,6 +26,10 @@ User Stories
 
 Here is a set of user tracks this plugin covers:
 
+Factors that go into the different possible user scenarios:
+
+
+
 
 USERPRO [Public, you should NOT see 'draft' orgs]
 
@@ -141,10 +145,32 @@ WOOCOMMERCE [Public, you should NOT see 'draft' orgs]
   - Enter CC information and purchase
 
   √ propel_okm_org_id and propel_org_league both equal 3405
-  √ Keys appear in OKM under org_id 14 (League org_id)
+  √ Keys appear in OKM under _org_id 14 (League org_id)
 
   + 2015-03-10 15:53:32 caseypatrickdriscoll
   + 2015-03-10 16:39:32 caseypatrickdriscoll
+
+- New User Registration during WooCommerce Purchase, select League (with _org_id) and Team (with _org_id)
+  - Add a key to the cart
+  - During checkout, create a new user
+  - Select a currently available League and Team, both with an _org_id
+  - Enter CC information and purchase
+
+  √ propel_okm_org_id and propel_org_team are equal
+  √ Keys appear in OKM under org_id 14 (Team _org_id)
+
+  +
+
+- New User Registration during WooCommerce Purchase, select League (no _org_id) and Team (with _org_id)
+  - Add a key to the cart
+  - During checkout, create a new user
+  - Select a currently available League (no _org_id) and Team (with _org_id)
+  - Enter CC information and purchase
+
+  √ propel_okm_org_id and propel_org_team are equal
+  √ Keys appear in OKM under org_id 14 (Team _org_id)
+
+  +
 
 - New User Registration during WooCommerce Purchase, select League (with _org_id) and create new Team
   - Add a key to the cart
@@ -181,6 +207,60 @@ WOOCOMMERCE [Public, you should NOT see 'draft' orgs]
 
 WP-ADMIN [Private, you SHOULD see 'draft' orgs]
 
+
+Create a new user
+/wp-admin/user-new.php
+
+- Create User, no League and no Team
+  - Go to /wp-admin/user-new.php and create a new user
+  - Don't select a League or Team
+  - Add User
+
+  √ There should be no propel_org_league or propel_org_team
+  √ There should be no propel_okm_org_id
+  √ When the new user purchases keys, the above should not change
+  √ When the new user purchases keys, there should be no organization_id in the OKM
+
+  + 2015-03-11 10:58:56 caseypatrickdriscoll
+
+- Create User, select League (no _org_id) and no Team
+  - Go to /wp-admin/user-new.php and create a new user
+  - Select a League (no _org_id) but don't select Team
+  - Add User
+
+  √ There should be a propel_org_league meta record
+  √ There should not be propel_okm_org_id or propel_org_team meta records
+  √ When the new user purchases keys, the above should not change
+  √ When the new user purchases keys, there should be no organization_id in the OKM
+
+  + 2015-03-11 11:05:09 caseypatrickdriscoll
+
+- Create User, select League (no _org_id) and create Team
+  - Go to /wp-admin/user-new.php and create a new user
+  - Select a League (no _org_id) and create a new Team
+  - Add User
+
+  √ There should be propel_org_league and propel_org_team meta records
+  √ There should not be a propel_okm_org_id meta record
+  √ When the new user purchases keys, the above should not change
+  √ When the new user purchases keys, there should be no organization_id in the OKM
+
+  + 2015-03-11 11:26:03 caseypatrickdriscoll
+
+- Create User, select League (no _org_id) and select Team (no _org_id)
+  - Go to /wp-admin/user-new.php and create a new user
+  - Select a League (no _org_id) and create a new Team
+  - Add User
+
+  √ There should be propel_org_league and propel_org_team meta records
+  √ There should not be a propel_okm_org_id meta record
+  √ When the new user purchases keys, the above should not change
+  √ When the new user purchases keys, there should be no organization_id in the OKM
+
+  + 2015-03-11 13:58:43 caseypatrickdriscoll
+
+
+Edit an arbitrary user (not your own)
 /wp-admin/user-edit.php
 
 - User Edit, select League and Team
@@ -193,6 +273,8 @@ WP-ADMIN [Private, you SHOULD see 'draft' orgs]
   - Select a currently available League and create a new Team
   - Update User
 
+
+Edit your own user profile
 /wp-admin/profile.php
 
 - User Edit, select League and Team
@@ -217,4 +299,3 @@ TODO:
 - Need to consider is/isnt org_admin for League/Team selection
 - Make sure saving appropriate propel_org_xxxxx to propel_okm_org_id (team, leagure, or none at all)
 - UserPro adds propel_org_team if created league with no team
-
