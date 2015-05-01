@@ -3,7 +3,7 @@
  * Plugin Name: PROPeL Organizations
  * Author: Casey Patrick Driscoll
  * Author URI: http://caseypatrickdriscoll.com
- * Version: 2015-03-10 17:21:02
+ * Version: 2015-05-01 13:32:49
  * Description: A plugin for adding users to organizations
  */
 
@@ -197,7 +197,9 @@ class Propel_Organizations {
 
 		$page = $wp_query->post->post_name;
 
-		if ( $page == 'login' || $page == 'profile' || $_POST['action'] == 'userpro_shortcode_template' || $_POST['action'] == 'userpro_process_form' ) return;
+		if ( $page == 'login' || $page == 'profile' || $_POST['action'] == 'userpro_process_form' ) return;
+
+//		$_POST['action'] == 'userpro_shortcode_template'
 
 		$user = wp_get_current_user();
 

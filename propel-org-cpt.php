@@ -25,7 +25,14 @@ class Propel_Org {
 	}
 
 
-
+	/**
+	 * Registers the 'PROPeL Org' custom post type
+	 *
+	 * @author caseypatrickdriscoll
+	 *
+	 * @edited 2015-05-01 13:33:33 - Refactors to only show menu on cap conditional
+	 *
+	 */
 	function create_post_type() {
 		$labels = array(
 			'name'                => _x( 'PROPeL Orgs', 'Post Type General Name', 'propel' ),
@@ -51,9 +58,9 @@ class Propel_Org {
 			'hierarchical'        => true,
 			'public'              => true,
 			'show_ui'             => true,
-			'show_in_menu'        => true,
-			'show_in_nav_menus'   => true,
-			'show_in_admin_bar'   => true,
+			'show_in_menu'        => false,
+			'show_in_nav_menus'   => false,
+			'show_in_admin_bar'   => false,
 			'menu_position'       => 5,
 			'menu_icon'           => 'dashicons-networking',
 			'can_export'          => true,
@@ -62,6 +69,13 @@ class Propel_Org {
 			'publicly_queryable'  => true,
 			'capability_type'     => 'page',
 		);
+
+		if ( current_user_can( 'edit_propel_orgs' ) ) {
+			$args['show_in_menu'] = true;
+			$args['show_in_nav_menus'] = true;
+			$args['show_in_admin_bar'] = true;
+		}
+
 		register_post_type( 'propel_org', $args );
 	}
 
