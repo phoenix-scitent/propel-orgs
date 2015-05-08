@@ -281,7 +281,13 @@ class Propel_Organizations {
 				</div>
 				<div class="userpro-clear"></div>
 			</div>
-			<script>
+
+
+	<?php
+		}
+
+		?>
+<script>
 
 jQuery( document ).ready( function() {
 
@@ -355,12 +361,8 @@ function setChildOrgs() {
 	);
 
 }
-
-
-			</script>
-
-	<?php
-		}
+</script>
+			<?php
 	}
 
 
