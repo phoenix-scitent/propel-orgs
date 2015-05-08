@@ -53,8 +53,8 @@ function setChildOrgs() {
 			'action'  : 'get_child_orgs',
 			'parent'  : parent,
 			'type'    : parentType,
-			'user_id' : data.user_id,
-			'public'  : data.public
+			'user_id' : undefined,
+			'public'  : "1"
 		},
 		function( response ) {
 			jQuery( '.spinner-' + response.data.parent ).hide();
